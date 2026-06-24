@@ -1,21 +1,35 @@
-# Python
+# ===== Python =====
 __pycache__/
 *.py[cod]
+*.egg-info/
+
+# ===== conda / venv 산출물 =====
 .venv/
 venv/
 env/
+.conda/
+envs/
 
-# Jupyter / Colab
+# ===== Jupyter / Colab =====
 .ipynb_checkpoints/
 
-# 단계별 산출물(코드로 생성/다운로드 — 레포에 포함하지 않음, 마스터 규칙 2)
-data/*
-weights/*
-outputs/*
-!data/.gitkeep
-!weights/.gitkeep
-!outputs/.gitkeep
+# ===== 데이터/결과물 (코드로 생성·다운로드 — 레포에 포함하지 않음, 공통 규칙 2) =====
+# 어느 세션이든 data/ weights/ outputs/ 의 '내용물'은 무시하되 폴더 자체는 .gitkeep 으로 유지.
+**/data/*
+**/weights/*
+**/outputs/*
+!**/data/.gitkeep
+!**/weights/.gitkeep
+!**/outputs/.gitkeep
 
-# OS
+# ===== 대용량 가중치/체크포인트 =====
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.h5
+
+# ===== OS =====
 .DS_Store
 Thumbs.db
