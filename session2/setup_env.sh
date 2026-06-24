@@ -10,8 +10,8 @@ set -euo pipefail
 ENV_NAME="ai_cop_session2"
 
 # 코랩과 Python 버전을 맞추려면 아래에 버전을 적습니다(예: PY_VERSION="3.11").
-# 비워 두면 conda 기본 Python 으로 생성됩니다(파이썬 패리티 미적용 — 코랩 00_setup 셀 5에서 확인 후 채우세요).
-PY_VERSION=""
+# 비워 두면 conda 기본 Python 으로 생성됩니다. (코랩 셀5에서 확인된 값으로 고정)
+PY_VERSION="3.12"
 
 # 스크립트 위치(session2/) 기준으로 동작
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

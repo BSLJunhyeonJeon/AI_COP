@@ -10,8 +10,8 @@ setlocal enabledelayedexpansion
 set "ENV_NAME=ai_cop_session2"
 
 REM 코랩과 Python 버전을 맞추려면 아래에 버전을 적습니다(예: set "PY_VERSION=3.11").
-REM 비워 두면 conda 기본 Python 으로 생성됩니다(파이썬 패리티 미적용 - 코랩 00_setup 셀 5에서 확인 후 채우세요).
-set "PY_VERSION="
+REM 비워 두면 conda 기본 Python 으로 생성됩니다. (코랩 셀5에서 확인된 값으로 고정)
+set "PY_VERSION=3.12"
 
 REM 스크립트 위치(session2\) 로 이동
 cd /d "%~dp0"
