@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2회차 · 이미지를 읽는 모델 만들기</title>
+<style>
+  :root{
+    --bg:#FAF8FC; --surface:#FFFFFF; --ink:#1E1726; --muted:#6B6478;
+    --plum:#6A2C91; --plum-deep:#4A1E6B; --rose:#C8447C;
+    --line:#E9E4F0; --tint:#F3ECF9; --tint-rose:#FBEEF4;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","D2Coding",Menlo,Consolas,monospace;
+    --wrap:50rem;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:18px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} }
+
+  /* scroll progress */
+  .progress{position:fixed; top:0; left:0; height:3px; width:0;
+    background:linear-gradient(90deg,var(--plum),var(--rose)); z-index:50; transition:width .08s linear;}
+
+  /* top bar */
+  .topbar{position:sticky; top:0; z-index:40; -webkit-backdrop-filter:saturate(1.2) blur(8px);
+    backdrop-filter:saturate(1.2) blur(8px);
+    background:rgba(250,248,252,.82); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:var(--wrap); margin:0 auto; padding:.7rem 1.5rem;
+    display:flex; align-items:center; gap:.6rem; font-family:var(--mono); font-size:.72rem;
+    letter-spacing:.04em; color:var(--muted);}
+  .topbar .dot{width:.5rem; height:.5rem; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,var(--rose),var(--plum)); flex:0 0 auto;}
+  .topbar b{color:var(--ink); font-weight:600;}
+
+  /* hero */
+  .hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line);}
+  .hero::before,.hero::after{content:""; position:absolute; border-radius:50%; filter:blur(46px); z-index:0;}
+  .hero::before{width:24rem; height:24rem; top:-7rem; right:-5rem;
+    background:radial-gradient(circle at 40% 40%,rgba(200,68,124,.42),transparent 70%);}
+  .hero::after{width:22rem; height:22rem; bottom:-9rem; left:-4rem;
+    background:radial-gradient(circle at 60% 60%,rgba(106,44,145,.34),transparent 70%);}
+  .hero-inner{position:relative; z-index:1; max-width:var(--wrap); margin:0 auto; padding:5rem 1.5rem 3.2rem;}
+  .hero .kicker{font-family:var(--sans); font-size:.84rem; font-weight:600; letter-spacing:.02em;
+    color:var(--plum); margin:0 0 1.3rem; text-transform:none;}
+  .hero h1{font-size:clamp(2.4rem,6vw,3.7rem); line-height:1.08; letter-spacing:-.02em;
+    font-weight:800; margin:0 0 1.2rem;}
+  .hero h1 .accent{color:var(--plum); position:relative;}
+  .hero-sub{font-size:1.12rem; color:var(--muted); max-width:38rem; margin:0 0 2.4rem;}
+
+  /* toc */
+  .toc{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.4rem .9rem; max-width:38rem;}
+  .toc a{display:flex; gap:.7rem; align-items:baseline; text-decoration:none; color:var(--ink);
+    padding:.5rem .7rem; border-radius:.5rem; transition:background .15s,color .15s;}
+  .toc a:hover{background:var(--tint); color:var(--plum);}
+  .toc .n{font-family:var(--mono); font-size:.72rem; color:var(--rose); flex:0 0 auto;}
+  .toc .t{font-size:.92rem; font-weight:500;}
+
+  /* layout */
+  main{max-width:var(--wrap); margin:0 auto; padding:0 1.5rem;}
+  .section{padding:3.6rem 0; border-top:1px solid var(--line);}
+  .section:first-child{border-top:none;}
+  .eyebrow{display:flex; align-items:center; gap:.6rem; margin:0 0 1rem;}
+  .eyebrow .cell{width:1.15rem; height:1.15rem; flex:0 0 auto;}
+  .eyebrow .num{font-family:var(--mono); font-size:.78rem; font-weight:600; color:var(--plum);
+    letter-spacing:.06em;}
+  .eyebrow .kick{font-size:.82rem; font-weight:700; letter-spacing:.06em; color:var(--muted);}
+  .section h2{font-size:clamp(1.55rem,3.6vw,2.05rem); line-height:1.2; letter-spacing:-.01em;
+    font-weight:750; margin:.1rem 0 1.1rem;}
+  .section p{margin:0 0 1.1rem; color:#332B40;}
+  .section p .hl{color:var(--plum); font-weight:600;}
+  .lead{font-size:1.08rem;}
+
+  /* definition list for the three tasks etc. */
+  .deflist{margin:1.4rem 0 0; padding:0; list-style:none; display:grid; gap:.7rem;}
+  .deflist li{background:var(--surface); border:1px solid var(--line); border-radius:.7rem;
+    padding:1rem 1.1rem; display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; align-items:start;}
+  .deflist .term{grid-column:1; font-weight:700; color:var(--plum); white-space:nowrap;}
+  .deflist .term .en{display:block; font-family:var(--mono); font-size:.66rem; color:var(--muted);
+    font-weight:500; letter-spacing:.03em; margin-top:.15rem;}
+  .deflist .desc{grid-column:2; color:#332B40;}
+  .deflist .desc .ex{display:block; margin-top:.25rem; font-size:.9rem; color:var(--muted);}
+
+  /* figure */
+  .fig{margin:1.8rem 0 0;}
+  .fig + .fig{margin-top:1.4rem;}
+  .fig-img{display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:.7rem;
+    background:var(--surface); box-shadow:0 1px 2px rgba(30,23,38,.04),0 8px 24px rgba(106,44,145,.06);}
+  .fig-img:not([src]){min-height:9rem; display:flex; position:relative;}
+  .fig-img:not([src])::after{content:"[그림 자리 — 빌더가 채움]"; position:absolute; inset:0;
+    display:grid; place-items:center; font-family:var(--mono); font-size:.72rem; color:var(--muted);
+    background:var(--tint); border-radius:.7rem;}
+  .fig-cap{display:flex; gap:.6rem; align-items:baseline; margin:.7rem .2rem 0; font-size:.86rem; color:var(--muted);}
+  .fig-cap .tag{font-family:var(--mono); font-size:.68rem; font-weight:600; color:var(--rose);
+    letter-spacing:.04em; flex:0 0 auto; padding-top:.05rem;}
+
+  /* callout */
+  .callout{margin:1.8rem 0 0; background:var(--tint); border:1px solid #E4D7F1;
+    border-left:3px solid var(--plum); border-radius:.6rem; padding:1.05rem 1.2rem;}
+  .callout.rose{background:var(--tint-rose); border-color:#F2D4E1; border-left-color:var(--rose);}
+  .callout .tag{display:inline-block; font-size:.74rem; font-weight:800; letter-spacing:.04em;
+    color:var(--plum); margin:0 0 .3rem;}
+  .callout.rose .tag{color:var(--rose);}
+  .callout p{margin:0; color:#2A2236; font-size:.98rem;}
+
+  /* pipeline diagram */
+  .pipe{margin:1.6rem 0 .4rem; display:flex; flex-wrap:wrap; align-items:stretch; gap:.45rem;}
+  .pipe .step{flex:1 1 7rem; min-width:6.5rem; background:var(--surface); border:1px solid var(--line);
+    border-radius:.6rem; padding:.75rem .7rem; text-align:center;}
+  .pipe .step .s-n{font-family:var(--mono); font-size:.66rem; color:var(--muted); letter-spacing:.05em;}
+  .pipe .step .s-t{font-weight:650; font-size:.92rem; margin-top:.15rem;}
+  .pipe .step .s-x{font-size:.72rem; color:var(--muted); margin-top:.2rem;}
+  .pipe .step.now{background:linear-gradient(180deg,#F6EEFC,#FFFFFF); border-color:#D9C4EC;}
+  .pipe .step.now .s-n{color:var(--plum);}
+  .pipe .step.now .s-t{color:var(--plum-deep);}
+  .pipe .step.next{border-style:dashed;}
+  .pipe .arrow{display:flex; align-items:center; color:#C8BCD8; font-size:1.1rem; flex:0 0 auto;}
+  @media (max-width:560px){ .pipe .arrow{display:none;} .pipe .step{flex:1 1 40%;} }
+
+  /* cost ladder */
+  .ladder{margin:1.5rem 0 .3rem; display:grid; gap:.55rem;}
+  .rung{display:grid; grid-template-columns:6.2rem 1fr auto; align-items:center; gap:.8rem;}
+  .rung .rl{font-weight:650; font-size:.92rem;}
+  .rung .bar{height:1.1rem; border-radius:.55rem; background:linear-gradient(90deg,var(--plum),var(--rose));}
+  .rung .rc{font-family:var(--mono); font-size:.72rem; color:var(--muted); white-space:nowrap;}
+  .ladder .axis{font-family:var(--mono); font-size:.7rem; color:var(--muted); text-align:right; margin-top:.1rem;}
+
+  /* fit concept trio */
+  .trio{margin:1.5rem 0 .3rem; display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem;}
+  .trio .card{background:var(--surface); border:1px solid var(--line); border-radius:.7rem; padding:1rem;}
+  .trio .card h4{margin:0 0 .35rem; font-size:.95rem;}
+  .trio .card.good h4{color:var(--plum);}
+  .trio .card p{margin:0; font-size:.84rem; color:var(--muted); line-height:1.5;}
+  @media (max-width:560px){ .trio{grid-template-columns:1fr;} }
+
+  /* footer */
+  .footer{border-top:1px solid var(--line); margin-top:1rem;}
+  .footer-inner{max-width:var(--wrap); margin:0 auto; padding:2.4rem 1.5rem 3.2rem;
+    font-size:.84rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:.5rem 1.2rem; align-items:center;}
+  .footer .dot{width:.5rem; height:.5rem; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,var(--rose),var(--plum));}
+
+  a:focus-visible, .toc a:focus-visible{outline:2px solid var(--plum); outline-offset:2px; border-radius:.4rem;}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<!-- reusable cell glyph -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cell" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="#C8447C" stroke-width="1.6"/>
+    <circle cx="14" cy="10.5" r="4" fill="#6A2C91"/>
+  </symbol>
+</svg>
+
+<div class="topbar">
+  <div class="topbar-inner"><span class="dot"></span><b>학습공동체 2회차</b> · 이미지 분석 입문</div>
+</div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">박사후연구원 학습공동체 · 2회차</p>
+    <h1>이미지를 읽는 모델,<br><span class="accent">어떻게 만드나</span></h1>
+    <p class="hero-sub">분류 · 감지 · 분할 — 세 가지 이미지 분석 태스크와, 내 연구 이미지에 딥러닝을 적용하기 위한 데이터·라벨링·증강의 기초.</p>
+    <nav class="toc" aria-label="오늘의 흐름">
+      <a href="#s1"><span class="n">01</span><span class="t">오늘의 지도 — 파이프라인</span></a>
+      <a href="#s2"><span class="n">02</span><span class="t">세 가지 태스크</span></a>
+      <a href="#s3"><span class="n">03</span><span class="t">데이터 형식과 라벨 비용</span></a>
+      <a href="#s4"><span class="n">04</span><span class="t">실습 1 · 사전학습의 한계</span></a>
+      <a href="#s5"><span class="n">05</span><span class="t">일반화와 과적합</span></a>
+      <a href="#s6"><span class="n">06</span><span class="t">실습 2 · SAM2 라벨링</span></a>
+      <a href="#s7"><span class="n">07</span><span class="t">데이터 증강</span></a>
+      <a href="#s8"><span class="n">08</span><span class="t">정리와 다음 세션</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 01 -->
+  <section class="section" id="s1">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">01</span><span class="kick">오늘의 지도</span></div>
+    <h2>이미지 분석은 어떤 순서로 흐르나</h2>
+    <p class="lead">딥러닝으로 이미지를 분석할 때는 보통 아래 순서를 따릅니다. 모델 학습은 그 중 한 단계일 뿐이고, <span class="hl">그 앞의 데이터와 라벨이 결과를 좌우</span>합니다.</p>
+    <div class="pipe">
+      <div class="step now"><div class="s-n">STEP 1</div><div class="s-t">데이터</div><div class="s-x">이미지 모으기</div></div>
+      <div class="arrow">›</div>
+      <div class="step now"><div class="s-n">STEP 2</div><div class="s-t">라벨</div><div class="s-x">정답 붙이기</div></div>
+      <div class="arrow">›</div>
+      <div class="step now"><div class="s-n">STEP 3</div><div class="s-t">증강</div><div class="s-x">데이터 늘리기</div></div>
+      <div class="arrow">›</div>
+      <div class="step next"><div class="s-n">STEP 4</div><div class="s-t">전이학습</div><div class="s-x">다음 세션</div></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="s-n">STEP 5</div><div class="s-t">적용</div><div class="s-x">내 이미지에</div></div>
+    </div>
+    <p>오늘 2회차는 앞쪽 <span class="hl">①데이터 · ②라벨 · ③증강</span>과, 모델이 무엇을 맞히고 무엇을 틀리는지 직접 보는 데까지 다룹니다. 실제로 모델을 우리 데이터로 학습시키는 전이학습(④)은 다음 세션입니다.</p>
+    <div class="callout">
+      <span class="tag">핵심</span>
+      <p>모델보다 데이터와 라벨이 먼저입니다. 같은 모델이라도 어떤 데이터로 무엇을 가르쳤느냐가 성능을 만듭니다.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="section" id="s2">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">02</span><span class="kick">세 가지 태스크</span></div>
+    <h2>같은 이미지, 다른 질문</h2>
+    <p class="lead">같은 사진이라도 <span class="hl">무엇을 묻느냐</span>에 따라 태스크가 갈립니다. 세 가지를 구분하는 것이 오늘의 출발점입니다.</p>
+    <ul class="deflist">
+      <li>
+        <span class="term">분류<span class="en">CLASSIFICATION</span></span>
+        <span class="desc">이미지 한 장이 <b>무엇인가?</b> → 라벨 하나로 답한다.<span class="ex">예: 이 세포 한 장은 "림프구"다.</span></span>
+      </li>
+      <li>
+        <span class="term">감지<span class="en">DETECTION</span></span>
+        <span class="desc"><b>무엇이 · 어디에 · 몇 개</b> 있나? → 사각형 박스 + 라벨로 답한다.<span class="ex">예: 백혈구 1개, 적혈구 여러 개의 위치를 박스로 표시.</span></span>
+      </li>
+      <li>
+        <span class="term">분할<span class="en">SEGMENTATION</span></span>
+        <span class="desc"><b>각 픽셀이 무엇</b>에 속하나? → 픽셀 단위 마스크로 답한다.<span class="ex">예: 세포의 정확한 경계까지 칠해서 구분.</span></span>
+      </li>
+    </ul>
+    <figure class="fig">
+      <img class="fig-img" data-embed="three_formats.png" alt="같은 혈액 이미지에 대한 분류·감지·분할 출력 비교">
+      <figcaption class="fig-cap"><span class="tag">FIG.1</span> 같은 혈액 이미지에 대한 세 가지 출력 — 라벨(분류) · 박스(감지) · 픽셀 마스크(분할).</figcaption>
+    </figure>
+    <div class="callout">
+      <span class="tag">핵심</span>
+      <p>분류 → 감지 → 분할로 갈수록 "어디"를 더 정밀하게 묻습니다. 정밀해질수록 모델이 알려주는 정보도 많아집니다.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section class="section" id="s3">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">03</span><span class="kick">데이터 형식과 라벨 비용</span></div>
+    <h2>정밀할수록 라벨이 비싸진다</h2>
+    <p class="lead">태스크가 정밀해질수록, 정답(라벨)을 만드는 <span class="hl">사람의 수고</span>가 커집니다. 이것이 형식 선택의 핵심 고려사항입니다.</p>
+    <div class="ladder">
+      <div class="rung"><span class="rl">분류</span><span class="bar" style="width:22%"></span><span class="rc">이미지당 단어 1개</span></div>
+      <div class="rung"><span class="rl">감지</span><span class="bar" style="width:55%"></span><span class="rc">객체마다 박스 좌표</span></div>
+      <div class="rung"><span class="rl">분할</span><span class="bar" style="width:100%"></span><span class="rc">픽셀마다 칠하기</span></div>
+      <div class="axis">라벨 비용 →</div>
+    </div>
+    <p>그래서 현실에서는 <span class="hl">"필요한 만큼만 정밀하게"</span> 라벨링합니다. 분할이 항상 정답은 아닙니다 — 내 질문이 "세포 종류"라면 분류로 충분하고, "세포 개수"라면 감지면 됩니다. 경계가 중요할 때만 분할로 갑니다.</p>
+    <div class="callout rose">
+      <span class="tag">핵심</span>
+      <p>라벨 형식 선택은 <b>비용 ↔ 정밀도</b>의 맞교환입니다. 연구 질문에 맞는 가장 싼 형식을 고르세요.</p>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section class="section" id="s4">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">04</span><span class="kick">실습 1 · 사전학습의 한계</span></div>
+    <h2>이미 학습된 모델, 그냥 쓰면 될까</h2>
+    <p class="lead">남이 학습시켜 둔 <span class="hl">사전학습 모델</span>을 가져다 쓰면 편합니다. 일부는 잘 됩니다 — 단, <span class="hl">그 모델이 배운 세계 안에서만</span> 그렇습니다.</p>
+    <p>오늘 써 본 세 모델은 모두 일상 이미지로 학습됐습니다. 분류는 ImageNet(일상 사물 1,000종), 감지는 YOLO11(COCO 80종), 분할은 SegFormer(ADE20K 장면 150종)입니다. 일반 사진에서는 잘 맞지만, <b>혈액세포는 한 번도 배운 적이 없어</b> 빗나갑니다.</p>
+    <figure class="fig">
+      <img class="fig-img" data-embed="02_classification.png" alt="분류: 일반 사진은 그럴듯하게, 혈액세포는 엉뚱하게 분류">
+      <figcaption class="fig-cap"><span class="tag">FIG.2</span> 분류 — 일반 사진은 그럴듯하지만, 혈액세포는 엉뚱한 라벨이 나옵니다(1,000종에 세포가 없음).</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="fig-img" data-embed="02_detection.png" alt="감지: 거리 사진은 잘 잡고, 도말은 박스가 거의 없음">
+      <figcaption class="fig-cap"><span class="tag">FIG.3</span> 감지 — 거리 사진의 사람·차는 잡지만, 혈액 도말에서는 박스가 거의 없습니다(COCO에 세포 클래스 없음).</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="fig-img" data-embed="02_segmentation.png" alt="분할: 장면은 의미있게, 혈액은 엉뚱한 클래스로 칠함">
+      <figcaption class="fig-cap"><span class="tag">FIG.4</span> 분할 — 일반 장면은 의미있게 나누지만, 혈액 이미지는 엉뚱한 클래스로 칠합니다.</figcaption>
+    </figure>
+    <div class="callout">
+      <span class="tag">핵심</span>
+      <p>사전학습 모델은 <b>자기가 배운 도메인 밖</b>에서는 약합니다. 내 데이터를 직접 가르쳐야 합니다 — 그것이 다음 세션의 전이학습입니다.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section class="section" id="s5">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">05</span><span class="kick">일반화와 과적합</span></div>
+    <h2>우리가 진짜 원하는 것: 일반화</h2>
+    <p class="lead"><span class="hl">일반화(generalization)</span>는 학습 때 못 본 새 데이터에도 잘 맞히는 능력입니다. 모델을 만드는 진짜 목표가 이것입니다.</p>
+    <p>방금 본 실패는 일반화의 한계였습니다 — 일상 이미지로 일반화된 모델이, 혈액이라는 새 도메인으로는 일반화되지 못한 것이죠. 반대 방향의 함정도 있습니다.</p>
+    <div class="trio">
+      <div class="card"><h4>과소적합</h4><p>아직 덜 배운 상태. 학습 데이터조차 잘 못 맞힌다.</p></div>
+      <div class="card good"><h4>좋은 적합 ✓</h4><p>핵심 패턴을 배워 새 데이터에도 잘 맞힌다. 목표 지점.</p></div>
+      <div class="card"><h4>과적합</h4><p>학습 데이터를 외워버려, 새 데이터엔 약하다.</p></div>
+    </div>
+    <p><span class="hl">과적합(overfitting)</span>은 데이터가 적고 모델이 클수록 잘 생깁니다. 우리처럼 라벨이 몇 장 안 되는 상황에서 특히 위험하죠. 그래서 가진 데이터를 늘리는 기법이 필요합니다.</p>
+    <div class="callout rose">
+      <span class="tag">핵심</span>
+      <p>목표는 일반화이고, 적은 데이터의 가장 큰 적은 과적합입니다. 이를 막는 대표적 방법이 다음에 볼 <b>증강</b>입니다.</p>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section class="section" id="s6">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">06</span><span class="kick">실습 2 · SAM2 라벨링</span></div>
+    <h2>클릭 한 번으로 마스크 만들기</h2>
+    <p class="lead">분할 라벨(픽셀 마스크)을 손으로 그리면 매우 비쌉니다(§3). 그런데 <span class="hl">클릭 한 번</span>으로 만들 수 있다면 어떨까요.</p>
+    <p><b>SAM2(Segment Anything Model 2)</b>는 무엇이든 분할하는 파운데이션 모델입니다. 따로 학습시키지 않아도(zero-shot) 클릭한 지점의 객체를 따냅니다.</p>
+    <figure class="fig">
+      <img class="fig-img" data-embed="03_sam2_clicks.png" alt="세포 위 클릭 한 번에 그 세포의 마스크가 생성됨">
+      <figcaption class="fig-cap"><span class="tag">FIG.5</span> 세포 위의 점(클릭) 하나 → 그 세포의 마스크. 클릭마다 세포 하나가 잡힙니다.</figcaption>
+    </figure>
+    <p>다만 SAM2는 <span class="hl">"어디"는 알아도 "무엇(클래스)"인지는 모릅니다.</span> 이 마스크가 백혈구인지 적혈구인지는 사람이 붙여 줍니다.</p>
+    <figure class="fig">
+      <img class="fig-img" data-embed="03_labeling_workflow.png" alt="클릭=마스크(SAM2) + 클래스=사람 지정 → 라벨 하나 완성">
+      <figcaption class="fig-cap"><span class="tag">FIG.6</span> 클릭 = 마스크(SAM2) + 클래스 = 사람 지정 → 분할 라벨 하나가 완성됩니다.</figcaption>
+    </figure>
+    <div class="callout">
+      <span class="tag">핵심</span>
+      <p><b>SAM2(어디) + 사람(무엇) = 빠른 라벨링.</b> 이렇게 만든 라벨이 다음 세션 학습의 재료가 됩니다. (실제 도구로는 CVAT의 SAM 통합을 씁니다.)</p>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="section" id="s7">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">07</span><span class="kick">데이터 증강</span></div>
+    <h2>적은 데이터를 늘리는 법</h2>
+    <p class="lead"><span class="hl">증강(augmentation)</span>은 가진 이미지를 그럴듯하게 변형해 데이터를 늘리는 것입니다. 새 정보를 만드는 게 아니라 <span class="hl">다양성을 흉내</span> 냅니다.</p>
+    <p>여기서 두 종류를 꼭 구분해야 합니다. <b>라벨이 따라 변하느냐</b>가 갈림길입니다.</p>
+    <ul class="deflist">
+      <li>
+        <span class="term">기하 변환<span class="en">GEOMETRIC</span></span>
+        <span class="desc">회전 · 플립 · 확대 — 위치가 바뀌므로 <b>라벨(박스·마스크)도 함께 움직인다.</b></span>
+      </li>
+      <li>
+        <span class="term">픽셀 변환<span class="en">PIXEL</span></span>
+        <span class="desc">밝기 · 대비 · 색조 — 위치는 그대로이므로 <b>라벨은 바뀌지 않는다.</b></span>
+      </li>
+    </ul>
+    <figure class="fig">
+      <img class="fig-img" data-embed="04_geometric.png" alt="기하 변환: 플립+회전에 박스와 마스크가 함께 이동">
+      <figcaption class="fig-cap"><span class="tag">FIG.7</span> 기하 변환(플립 + 회전) — 박스와 마스크가 이미지를 따라 함께 움직입니다.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="fig-img" data-embed="04_aug_animation.gif" alt="회전에 따라 마스크가 함께 도는 애니메이션">
+      <figcaption class="fig-cap"><span class="tag">FIG.8</span> 회전에 마스크(라벨)가 함께 도는 모습 — 기하 변환에서는 라벨이 그림을 따라갑니다.</figcaption>
+    </figure>
+    <figure class="fig">
+      <img class="fig-img" data-embed="04_pixel.png" alt="픽셀 변환: 밝기·색조만 바뀌고 라벨은 그대로">
+      <figcaption class="fig-cap"><span class="tag">FIG.9</span> 픽셀 변환(밝기 · 색조) — 이미지만 바뀌고, 같은 박스·마스크가 그대로 유지됩니다.</figcaption>
+    </figure>
+    <p>모든 변형이 좋은 건 아닙니다. <span class="hl">도메인에 맞지 않는 증강은 오히려 해롭습니다.</span></p>
+    <figure class="fig">
+      <img class="fig-img" data-embed="04_bad_aug.png" alt="나쁜 증강: 극단적 색조 변경으로 염색 색 정보 파괴">
+      <figcaption class="fig-cap"><span class="tag">FIG.10</span> 나쁜 증강 — 혈액 도말은 "염색 색"이 곧 정보인데, 극단적 색조 변경은 그 정보를 파괴해 모델이 잘못 배우게 합니다.</figcaption>
+    </figure>
+    <div class="callout rose">
+      <span class="tag">핵심 · 과적합 연결</span>
+      <p>증강은 적은 데이터의 다양성을 늘려 <b>§5의 과적합을 줄이고 일반화를 돕습니다.</b> 단, 도메인에 맞는 변형만 골라야 합니다.</p>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="section" id="s8">
+    <div class="eyebrow"><svg class="cell"><use href="#cell"/></svg><span class="num">08</span><span class="kick">정리와 다음 세션</span></div>
+    <h2>오늘 온 곳, 다음에 갈 곳</h2>
+    <p class="lead">오늘 우리는 세 태스크(분류·감지·분할)와 데이터 형식·라벨 비용을 짚고 → 사전학습 모델의 한계(일반화)를 눈으로 보고 → SAM2로 라벨링하고 → 증강을 배웠습니다.</p>
+    <div class="pipe">
+      <div class="step now"><div class="s-n">STEP 1</div><div class="s-t">데이터</div><div class="s-x">완료</div></div>
+      <div class="arrow">›</div>
+      <div class="step now"><div class="s-n">STEP 2</div><div class="s-t">라벨</div><div class="s-x">완료</div></div>
+      <div class="arrow">›</div>
+      <div class="step now"><div class="s-n">STEP 3</div><div class="s-t">증강</div><div class="s-x">완료</div></div>
+      <div class="arrow">›</div>
+      <div class="step next"><div class="s-n">STEP 4</div><div class="s-t">전이학습</div><div class="s-x">다음 세션 ★</div></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="s-n">STEP 5</div><div class="s-t">적용</div><div class="s-x">내 이미지에</div></div>
+    </div>
+    <p>다음 세션에서는 <span class="hl">전이학습</span>을 합니다 — 오늘 빗나갔던 바로 그 모델들(YOLO11 · SegFormer)을 우리 혈액 데이터로 길들여, 제대로 맞히게 만듭니다.</p>
+    <div class="callout">
+      <span class="tag">한 줄 정리</span>
+      <p>모델은 도구일 뿐입니다. 좋은 데이터와 라벨, 그리고 적절한 증강이 결과를 만듭니다.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="dot"></span>
+    <span>박사후연구원 학습공동체 · 2회차 강의 자료</span>
+    <span style="font-family:var(--mono); font-size:.72rem;">분류 · 감지 · 분할 / 라벨링 / 증강</span>
+  </div>
+</footer>
+
+<script>
+  // 스크롤 진행 표시줄
+  (function(){
+    var bar = document.getElementById('progress');
+    function update(){
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      var p = max > 0 ? (h.scrollTop || document.body.scrollTop) / max : 0;
+      bar.style.width = (p * 100).toFixed(1) + '%';
+    }
+    document.addEventListener('scroll', update, {passive:true});
+    window.addEventListener('resize', update);
+    update();
+  })();
+</script>
+</body>
+</html>
