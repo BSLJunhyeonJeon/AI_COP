@@ -21,3 +21,12 @@ medmnist==3.0.2       # 분류용 BloodMNIST
 numpy==2.0.2          # 배열/마스크 처리
 matplotlib==3.10.0    # 세 형식 비교 시각화
 Pillow==11.3.0        # PNG 입출력 (PIL)
+
+# ============================================================
+# 2단계(추론 데모)에서 추가 — 사전학습 모델 추론
+# ============================================================
+# 버전은 02_inference_demo 셀2 출력에서 확인 후 == 로 고정(현재 미고정, 추측 금지).
+# torch==2.11.0 과 호환되는 버전을 쓴다. ultralytics 설치가 기존 torch 를 덮어쓰지 않게(이미 만족하면 그대로 둠).
+torchvision      # 분류용 ImageNet 모델 + 전처리 (torch 와 짝)
+ultralytics      # YOLO11 감지 (COCO 사전학습)
+transformers     # SegFormer 분할 (HuggingFace, ADE20K)
