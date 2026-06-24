@@ -25,8 +25,14 @@ Pillow==11.3.0        # PNG 입출력 (PIL)
 # ============================================================
 # 2단계(추론 데모)에서 추가 — 사전학습 모델 추론
 # ============================================================
-# 버전은 02_inference_demo 셀2 출력에서 확인 후 == 로 고정(현재 미고정, 추측 금지).
-# torch==2.11.0 과 호환되는 버전을 쓴다. ultralytics 설치가 기존 torch 를 덮어쓰지 않게(이미 만족하면 그대로 둠).
-torchvision      # 분류용 ImageNet 모델 + 전처리 (torch 와 짝)
-ultralytics      # YOLO11 감지 (COCO 사전학습)
-transformers     # SegFormer 분할 (HuggingFace, ADE20K)
+# 버전은 02_inference_demo 셀2 출력에서 확인된 값으로 고정(torch==2.11.0 유지).
+# torchvision 은 +cu128 빼고 버전만 고정. ultralytics 는 기존 torch 를 덮어쓰지 않음(이미 만족).
+torchvision==0.26.0    # 분류용 ImageNet 모델 + 전처리 (torch 와 짝)
+ultralytics==8.4.76    # YOLO11 감지(COCO) + SAM2 라벨링
+transformers==5.12.0   # SegFormer 분할 (HuggingFace, ADE20K)
+
+# ============================================================
+# 4단계(증강)에서 추가 — 이미지+박스+마스크 함께 변형
+# ============================================================
+# 버전은 04_augmentation 셀2 출력에서 확인 후 == 로 고정(현재 미고정, 추측 금지).
+albumentations   # 기하/픽셀 증강 (이미지·박스·마스크 동시 변형)
