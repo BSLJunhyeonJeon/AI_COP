@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+
+# 단계별 산출물(코드로 생성/다운로드 — 레포에 포함하지 않음, 마스터 규칙 2)
+data/*
+weights/*
+outputs/*
+!data/.gitkeep
+!weights/.gitkeep
+!outputs/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
