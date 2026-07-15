@@ -506,6 +506,21 @@
   .slot.live{border-color:var(--rose); background:linear-gradient(180deg,#FCFAFE,#FBF2F6);}
 
   /* conf 슬라이더 힌트 (정적 표현) */
+  /* ---- 이미지 슬롯 (실습 결과 자리 — 빌더가 img 에 base64 주입) ---- */
+  .figslot{margin:1.6rem 0;}
+  .figslot .fs-label{font-family:var(--mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--rose); font-weight:600; display:block; margin-bottom:.5rem;}
+  .figslot .fs-frame{position:relative; width:100%; border-radius:.8rem; overflow:hidden; background:#F6F1FB; border:1px solid var(--line); min-height:120px;}
+  .figslot .fs-img{display:block; width:100%; height:auto;}
+  .figslot .fs-img:not([src]){display:none;}      /* src 없으면(빌더 전) 숨기고 자리표시 노출 */
+  .figslot .fs-ph{padding:1.6rem 1.4rem; display:flex; gap:1rem; align-items:center; color:var(--muted);}
+  .figslot .fs-img[src] + .fs-ph{display:none;}    /* 이미지 채워지면 자리표시 제거 */
+  .figslot .fs-ph .pic{flex:none; width:2.4rem; height:2.4rem; border-radius:.5rem; background:#EDE4F4; color:#9B7BB5; display:grid; place-items:center; font-size:1.3rem;}
+  .figslot .fs-ph .pt{font-size:.92rem; line-height:1.5;}
+  .figslot .fs-ph .pt b{color:var(--plum); font-weight:700;}
+  .figslot .fs-ph code{font-family:var(--mono); font-size:.78rem; background:var(--tint); color:var(--plum); padding:.05rem .3rem; border-radius:.3rem;}
+  .figslot .fs-cap{margin-top:.6rem; font-size:.9rem; color:var(--muted); line-height:1.55;}
+  .figslot .fs-cap b{color:var(--plum); font-weight:700;}
+
   /* ---- conf 슬라이더 위젯 ---- */
   .confslider{text-align:left;}
   .cs-stage{margin:.4rem 0 1.2rem;}
@@ -651,10 +666,13 @@
       <p>학습은 이 강의가 끝날 때쯤 함께 끝납니다. <b>오늘 강의 전체가 저 한 줄의 해설</b>입니다 —
       왜 되는지, 무엇을 고를지, 잘 됐는지 어떻게 아는지.</p>
     </div>
-    <div class="slot" style="margin:0;">
-      <span class="st">복귀 후 확인 · 실습 결과</span>
-      <div class="sd">〔 2회차의 그 실패 그림이 여기 〕<br>
-      <code>data-embed="03_before_after.png"</code> 왼쪽 — 오늘 이게 어떻게 바뀌는지 봅니다</div>
+    <div class="figslot" style="margin:0;">
+      <span class="fs-label">복귀 후 확인 · 실습 결과</span>
+      <div class="fs-frame">
+        <img class="fs-img" data-embed="03_before_after.png" alt="파인튜닝 전/후 비교">
+        <div class="fs-ph"><div class="pic">▦</div><div class="pt"><b>전/후 비교 그림</b>이 여기 채워집니다<br><code>03_before_after.png</code></div></div>
+      </div>
+      <div class="fs-cap">왼쪽(전) 빗나감 → 오른쪽(후) 맞힘. 오늘 이걸 직접 만듭니다.</div>
     </div>
   </div>
 </div>
@@ -1047,10 +1065,13 @@
   </div>
 
   <!-- 2회차 실패 회수 슬롯 -->
-  <div class="slot">
-    <span class="st">복귀 후 확인 · 실습 결과</span>
-    <div class="sd">〔 2회차의 그 실패 그림이 여기 들어갑니다 〕<br>
-    <code>data-embed="03_before_after.png"</code> 의 <b>왼쪽 패널</b> (COCO 사전학습 YOLO11n → 혈액에서 박스 거의 없음)</div>
+  <div class="figslot">
+    <span class="fs-label">복귀 후 확인 · 실습 결과</span>
+    <div class="fs-frame">
+      <img class="fs-img" data-embed="03_before_after.png" alt="파인튜닝 전/후 비교 — 왼쪽이 COCO 사전학습 실패">
+      <div class="fs-ph"><div class="pic">▦</div><div class="pt"><b>전/후 비교</b> — 왼쪽 패널이 지난 시간의 그 실패<br><code>03_before_after.png</code></div></div>
+    </div>
+    <div class="fs-cap"><b>왼쪽(전)</b>: COCO 사전학습 YOLO11n → 혈액에서 박스 거의 없음. <b>오른쪽(후)</b>: 오늘 파인튜닝한 결과.</div>
   </div>
 
   <div class="prose">
@@ -1117,10 +1138,13 @@
   </div>
 
   <!-- 학습 완료 후 확인 슬롯 -->
-  <div class="slot">
-    <span class="st">복귀 후 확인 · 실습 결과</span>
-    <div class="sd">〔 학습곡선이 여기 들어갑니다 〕<br>
-    <code>data-embed="03_curves.png"</code> — loss는 내려가고 mAP는 올라가는 그림 ("배우고 있다는 뜻")</div>
+  <div class="figslot">
+    <span class="fs-label">복귀 후 확인 · 실습 결과</span>
+    <div class="fs-frame">
+      <img class="fs-img" data-embed="03_curves.png" alt="학습곡선 — loss와 mAP">
+      <div class="fs-ph"><div class="pic">▦</div><div class="pt"><b>학습곡선</b>이 여기 채워집니다<br><code>03_curves.png</code></div></div>
+    </div>
+    <div class="fs-cap">loss는 내려가고 mAP는 올라갑니다 — "배우고 있다"는 뜻.</div>
   </div>
 </section>
 <!-- ============================================================ -->
@@ -1423,10 +1447,13 @@
   </div>
 
   <!-- 클래스별 성능 (불균형 회수) -->
-  <div class="slot">
-    <span class="st">복귀 후 확인 · 실습 결과</span>
-    <div class="sd">〔 클래스별 성능 표가 여기 들어갑니다 〕<br>
-    <code>data-embed="03_per_class.png"</code> — RBC·WBC·Platelets 각각의 점수 + 학습 박스 수</div>
+  <div class="figslot">
+    <span class="fs-label">복귀 후 확인 · 실습 결과</span>
+    <div class="fs-frame">
+      <img class="fs-img" data-embed="03_per_class.png" alt="클래스별 성능 — RBC·WBC·Platelets">
+      <div class="fs-ph"><div class="pic">▦</div><div class="pt"><b>클래스별 성능 표</b>가 여기 채워집니다<br><code>03_per_class.png</code></div></div>
+    </div>
+    <div class="fs-cap">RBC·WBC·Platelets 각각의 점수 + 학습(train) 박스 수 — 많이 본 클래스가 잘 맞습니다.</div>
   </div>
 
   <div class="callout warn">

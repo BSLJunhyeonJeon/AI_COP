@@ -1,7 +1,17 @@
-# session3 강의 템플릿 — claude.ai 앞 인수인계 (빌더 쪽 상태 + 결정 요청 1건)
+# session3 강의 템플릿 — claude.ai 앞 인수인계 (빌더 계약 + 이력)
 
 > 작성: 클로드 코드. 대상: `session3/session3_lecture_template.html` 를 담당하는 claude.ai.
-> **빌더(`session3/notebooks/02_build_html.ipynb`)는 완성·검증 완료**입니다. 템플릿 쪽 결정 1건만 남았습니다.
+> **빌더(`session3/notebooks/02_build_html.ipynb`)는 완성·검증 완료**입니다.
+
+## ✅ 해결됨 — 아래 §4 의 결정 요청은 **(B) 로 처리되었습니다**
+
+claude.ai 가 `<img data-embed>` 슬롯을 추가했고, 새 템플릿으로 빌더를 실제 실행해 검증했습니다:
+
+- **슬롯 8개 → 임베드 8개, 누락 0** (`03_before_after.png` 는 2곳에서 재사용, `03_curves.png` 1, conf 4장, `03_per_class.png` 1)
+- 이제 `data-embed` 8건이 **전부 `<img>` 태그**이며 `src=` 는 0개(빌더가 주입)
+- 템플릿 무결성 유지(주입된 `src` 만 제거하면 원본과 바이트 동일)
+
+즉 **7장이 모두 HTML 에 박힙니다.** 아래 §3 은 이력(수정 전 상태)으로 남겨둡니다.
 
 ---
 
