@@ -1453,15 +1453,19 @@
       <img class="fs-img" data-embed="03_per_class.png" alt="클래스별 성능 — RBC·WBC·Platelets">
       <div class="fs-ph"><div class="pic">▦</div><div class="pt"><b>클래스별 성능 표</b>가 여기 채워집니다<br><code>03_per_class.png</code></div></div>
     </div>
-    <div class="fs-cap">RBC·WBC·Platelets 각각의 점수 + 학습(train) 박스 수 — 많이 본 클래스가 잘 맞습니다.</div>
+    <div class="fs-cap">RBC·WBC·Platelets 각각의 점수 + 학습(train) 박스 수 — 박스 수와 점수가 그대로 비례하지는 않습니다.</div>
   </div>
 
   <div class="callout warn">
     <div class="ico">▤</div>
-    <div class="body"><b>Platelets 점수가 낮게 나올 겁니다. 모델이 나빠서가 아닙니다.</b>
-    학습 데이터에 RBC는 4,000개가 넘는데 Platelets는 360개뿐 —
-    <b>본 게 적으니 못 맞히는</b> 겁니다. 성능이 안 나올 때 모델을 탓하기 전에
-    <b>데이터부터 보세요</b>. 이 불균형을 어떻게 다루는지가 4회차의 실전 주제입니다.</div>
+    <div class="body"><b>많이 본 클래스가 꼭 잘 맞는 건 아닙니다.</b>
+    학습 박스는 RBC 2,381 : WBC 214 : Platelets 209 로 <b>11배</b> 차이인데,
+    정작 <b>가장 많이 본 RBC 점수가 더 낮게</b> 나옵니다 —
+    적혈구는 화면을 빽빽하게 채우고 서로 겹쳐 있어 <b>하나씩 떼어 세기가 어렵고</b>,
+    그만큼 사람이 붙인 라벨도 들쭉날쭉하기 때문입니다.
+    즉 점수는 <b>양(개수)만이 아니라 난이도와 라벨 품질</b>이 함께 정합니다.
+    성능이 안 나올 때 모델을 탓하기 전에 <b>데이터부터 보세요</b> —
+    이 불균형과 라벨 품질을 어떻게 다루는지가 4회차의 실전 주제입니다.</div>
   </div>
 
   <!-- ===== 5-3. 함정 ===== -->
