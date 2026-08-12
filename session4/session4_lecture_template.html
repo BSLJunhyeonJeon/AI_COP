@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4회차 · 손잡이를 돌리면 성능이 변한다 — 박사후연구원 학습공동체</title>
+<style>
+  :root{
+    /* 콩잎 병해 팔레트 — 잎 녹색 / 녹병 주황 / 각반병 갈색 */
+    --bg:#F8FBF7; --surface:#FFFFFF; --ink:#18241C; --muted:#5E6E63;
+    --leaf:#2F6B3C; --leaf-deep:#1D4826; --rust:#B5622A;
+    --line:#E0EBE0; --tint:#ECF4EB; --tint-rust:#FBF1E9;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","D2Coding",Menlo,Consolas,monospace;
+    --wrap:64rem;
+    --teal:#2C7A7B; --teal-bg:#E6F3F3; --teal-line:#C5E3E3;
+    --amber:#B7791F; --amber-bg:#FBF3E3; --amber-line:#E4CE9E;
+    --danger:#B5453B; --danger-bg:#FBEEEC; --danger-line:#EDCDC9;
+    --spot:#7A5230;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:18px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 1.5rem;}
+
+  /* 진행 바 */
+  #progress{position:fixed; top:0; left:0; height:3px; width:0;
+    background:linear-gradient(90deg,var(--leaf),var(--rust)); z-index:99;}
+
+  /* ===== 히어로 ===== */
+  .hero{padding:4.5rem 0 2rem; border-bottom:1px solid var(--line);}
+  .hero .kicker{
+    font-family:var(--mono); font-size:.74rem; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--rust); font-weight:600;
+  }
+  .hero h1{font-size:3rem; line-height:1.12; margin:.7rem 0 .8rem; font-weight:800; letter-spacing:-.025em;}
+  .hero .sub{font-size:1.15rem; color:var(--muted); max-width:44rem;}
+  .hero .sub b{color:var(--leaf); font-weight:700;}
+  .hero .meta{
+    display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1.6rem;
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.06em;
+  }
+  .hero .meta span{
+    background:var(--tint); border:1px solid var(--line);
+    color:var(--leaf-deep); padding:.28rem .6rem; border-radius:.35rem;
+  }
+
+  /* ===== 오늘의 지도 ===== */
+  .roadmap{display:grid; grid-template-columns:repeat(5,1fr); gap:.7rem; margin:2.2rem 0 1rem;}
+  @media (max-width:820px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .roadmap a{
+    text-decoration:none; color:inherit; display:block;
+    background:var(--surface); border:1px solid var(--line); border-radius:.8rem;
+    padding:.9rem .9rem 1rem; transition:border-color .15s, transform .15s;
+  }
+  .roadmap a:hover{border-color:var(--leaf); transform:translateY(-2px);}
+  .roadmap .n{
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; color:var(--rust);
+    font-weight:700; display:block; margin-bottom:.25rem;
+  }
+  .roadmap .t{font-size:.95rem; font-weight:700; line-height:1.35; letter-spacing:-.01em;}
+  .roadmap .d{font-size:.78rem; color:var(--muted); margin-top:.3rem; line-height:1.45;}
+
+  /* ===== 섹션 헤더 ===== */
+  .section-head{padding:4rem 0 1rem;}
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--rust); font-weight:600;
+    display:flex; align-items:center; gap:.6rem;
+  }
+  .eyebrow::before{content:""; width:1.6rem; height:1px; background:var(--rust);}
+  .section-head h2{font-size:2.4rem; line-height:1.15; margin:.6rem 0 .4rem; font-weight:800; letter-spacing:-.02em;}
+  .section-head .lead{color:var(--muted); font-size:1.06rem; max-width:44rem;}
+  .section-head .lead b{color:var(--leaf); font-weight:700;}
+
+  /* ===== 본문 ===== */
+  .prose{max-width:46rem; margin:1.5rem 0;}
+  .prose p{margin:.9rem 0;}
+  .prose b{color:var(--leaf); font-weight:700;}
+  .prose .en{font-family:var(--mono); font-size:.88em; color:var(--rust);
+    background:var(--tint-rust); padding:.05rem .35rem; border-radius:.3rem;}
+
+  /* ===== 콜아웃 ===== */
+  .callout{
+    display:flex; gap:1rem; align-items:flex-start;
+    background:var(--tint); border:1px solid var(--line); border-left:3px solid var(--leaf);
+    border-radius:.7rem; padding:1.1rem 1.3rem; margin:1.8rem 0;
+  }
+  .callout .ico{
+    flex:none; width:1.7rem; height:1.7rem; border-radius:.4rem; background:var(--leaf);
+    color:#fff; display:grid; place-items:center; font-family:var(--mono); font-weight:700; font-size:.9rem;
+  }
+  .callout .body{font-size:.97rem; line-height:1.65;}
+  .callout b{color:var(--leaf-deep);}
+  .callout.warn{background:var(--danger-bg); border-color:var(--danger-line); border-left-color:var(--danger);}
+  .callout.warn .ico{background:var(--danger);} .callout.warn b{color:var(--danger);}
+  .callout.tip{background:var(--amber-bg); border-color:var(--amber-line); border-left-color:var(--amber);}
+  .callout.tip .ico{background:var(--amber);} .callout.tip b{color:var(--amber);}
+
+  /* ===== 그림 ===== */
+  .figure{
+    background:var(--surface); border:1px solid var(--line); border-radius:1.1rem;
+    padding:1.5rem 1.4rem 1.1rem; margin:1.8rem 0 2rem;
+    box-shadow:0 1px 2px rgba(24,36,28,.04), 0 10px 30px rgba(29,72,38,.05);
+  }
+  .figure .cap{
+    font-family:var(--mono); font-size:.68rem; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--rust); font-weight:600; margin-bottom:.9rem;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .figure .cap .no{background:var(--leaf); color:#fff; padding:.1rem .45rem; border-radius:.3rem;}
+  .figure svg{display:block; width:100%; height:auto;}
+  .figure .fnote{
+    margin-top:1rem; padding-top:.9rem; border-top:1px dashed var(--line);
+    font-size:.92rem; color:var(--muted); line-height:1.6;
+  }
+  .figure .fnote b{color:var(--leaf); font-weight:700;}
+
+  /* 노트북 그림 슬롯 */
+  .figslot .fs-img{display:block; width:100%; height:auto; border-radius:.5rem;}
+  .figslot .fs-img:not([src]){display:none;}
+  .figslot .fs-ph{padding:1.5rem 1.2rem; display:flex; gap:1rem; align-items:center; color:var(--muted);
+    background:var(--bg); border:1px dashed var(--line); border-radius:.6rem;}
+  .figslot .fs-img[src] + .fs-ph{display:none;}
+  .figslot .fs-ph .pic{flex:none; width:2.4rem; height:2.4rem; border-radius:.5rem;
+    background:#E2EEE2; color:#6E9576; display:grid; place-items:center; font-size:1.3rem;}
+  .figslot .fs-ph .pt{font-size:.9rem; line-height:1.5;}
+
+  /* ===== 표 ===== */
+  .tbl{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:.93rem;
+    background:var(--surface); border:1px solid var(--line); border-radius:.8rem; overflow:hidden;}
+  .tbl th,.tbl td{padding:.7rem .85rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;}
+  .tbl thead th{background:var(--tint); font-size:.76rem; font-family:var(--mono);
+    letter-spacing:.06em; text-transform:uppercase; color:var(--leaf-deep); font-weight:700;}
+  .tbl tbody tr:last-child td{border-bottom:none;}
+  .tbl td b{color:var(--leaf);}
+  .tbl .mono{font-family:var(--mono); font-size:.86rem;}
+  .tbl .hi{background:var(--tint-rust);}
+
+  /* ===== 용어 카드 ===== */
+  .terms{display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin:1.6rem 0;}
+  @media (max-width:760px){ .terms{grid-template-columns:1fr;} }
+  .term{
+    background:var(--surface); border:1px solid var(--line); border-radius:.9rem; padding:1.1rem 1.2rem;
+    box-shadow:0 1px 2px rgba(24,36,28,.04);
+  }
+  .term .h{display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:.4rem;}
+  .term .h .kr{font-size:1.1rem; font-weight:800; letter-spacing:-.01em;}
+  .term .h .en{font-family:var(--mono); font-size:.7rem; color:var(--rust);
+    background:var(--tint-rust); padding:.15rem .45rem; border-radius:.3rem; white-space:nowrap;}
+  .term .d{font-size:.93rem; line-height:1.6; color:var(--ink);}
+  .term .meta{margin-top:.6rem; padding-top:.55rem; border-top:1px dashed var(--line);
+    font-size:.83rem; color:var(--muted);}
+  .term .meta .lbl{font-family:var(--mono); font-size:.63rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--rust); font-weight:700; display:block;}
+
+  /* ===== 연구주제 카드 ===== */
+  .topics{display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin:1.6rem 0 2rem;}
+  @media (max-width:760px){ .topics{grid-template-columns:1fr;} }
+  .topic{background:var(--surface); border:1px solid var(--line); border-radius:.9rem;
+    padding:1.1rem 1.2rem; border-top:3px solid var(--leaf);}
+  .topic .t{font-size:1.02rem; font-weight:800; margin-bottom:.15rem; letter-spacing:-.01em;}
+  .topic .q{font-size:.85rem; color:var(--muted); margin-bottom:.7rem;}
+  .topic .pick{display:inline-block; font-family:var(--mono); font-size:.72rem; font-weight:700;
+    padding:.2rem .5rem; border-radius:.3rem; background:var(--tint); color:var(--leaf-deep); margin-bottom:.55rem;}
+  .topic .why{font-size:.9rem; line-height:1.6;}
+
+  /* ===== 학습률 슬라이더 ===== */
+  .lrs{background:var(--surface); border:1px solid var(--line); border-radius:1.1rem;
+    padding:1.5rem 1.4rem 1.2rem; margin:1.8rem 0 2rem;
+    box-shadow:0 1px 2px rgba(24,36,28,.04), 0 10px 30px rgba(29,72,38,.05);}
+  .lrs .cap{font-family:var(--mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--rust); font-weight:600; margin-bottom:.9rem; display:flex; align-items:center; gap:.5rem;}
+  .lrs .cap .no{background:var(--leaf); color:#fff; padding:.1rem .45rem; border-radius:.3rem;}
+  .lrs .stagebox{position:relative; border:1px solid var(--line); border-radius:.7rem;
+    overflow:hidden; background:var(--bg); min-height:120px;}
+  .lrs .cs-img{display:none; width:100%; height:auto;}
+  .lrs .cs-img.is-on[src]{display:block;}
+  .lrs .cs-ph{padding:1.6rem 1.2rem; display:flex; gap:1rem; align-items:center; color:var(--muted);}
+  .lrs .cs-ph .pic{flex:none; width:2.4rem; height:2.4rem; border-radius:.5rem;
+    background:#E2EEE2; color:#6E9576; display:grid; place-items:center; font-size:1.3rem;}
+  .lrs.has-img .cs-ph{display:none;}
+  .lrs .ctl{display:flex; align-items:center; gap:1rem; margin-top:1rem; flex-wrap:wrap;}
+  .lrs .ctl label{font-family:var(--mono); font-size:.74rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); font-weight:700;}
+  .lrs input[type=range]{flex:1; min-width:200px; accent-color:var(--leaf);}
+  .lrs .val{font-family:var(--mono); font-weight:700; color:var(--leaf-deep);
+    background:var(--tint); padding:.2rem .55rem; border-radius:.35rem; font-size:.9rem;}
+  .lrs .ticks{display:flex; gap:.4rem; margin-top:.8rem; flex-wrap:wrap;}
+  .lrs .cs-tick{font-family:var(--mono); font-size:.72rem; cursor:pointer; user-select:none;
+    padding:.28rem .55rem; border-radius:.35rem; border:1px solid var(--line);
+    background:var(--surface); color:var(--muted); transition:.15s;}
+  .lrs .cs-tick.is-on{background:var(--leaf); color:#fff; border-color:var(--leaf); font-weight:700;}
+  .lrs .verdict{margin-top:1rem; padding-top:.9rem; border-top:1px dashed var(--line);
+    font-size:.94rem; line-height:1.6; color:var(--muted); min-height:3.2rem;}
+  .lrs .verdict b{color:var(--leaf);}
+
+  /* ===== 체크리스트 ===== */
+  .checks{background:var(--surface); border:1px solid var(--line); border-radius:1rem;
+    padding:1.3rem 1.4rem; margin:1.6rem 0;}
+  .checks li{margin:.55rem 0; font-size:.96rem; line-height:1.6;}
+  .checks li b{color:var(--leaf);}
+  .checks ol{margin:0; padding-left:1.3rem;}
+
+  /* ===== 마무리 ===== */
+  .outro{border-top:1px solid var(--line); margin-top:4rem; padding:3rem 0 5rem;}
+  .outro h2{font-size:1.8rem; font-weight:800; letter-spacing:-.02em; margin:0 0 .6rem;}
+  .footnote{font-size:.82rem; color:var(--muted); margin-top:2.4rem; line-height:1.7;}
+  .footnote b{color:var(--leaf-deep);}
+  hr.sep{border:none; border-top:1px solid var(--line); margin:3.2rem 0 0;}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<!-- ============ 히어로 ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">박사후연구원 학습공동체 · 4회차</div>
+    <h1>손잡이를 돌리면<br>성능이 변한다</h1>
+    <p class="sub">지난 시간엔 학습을 <b>돌려 봤습니다</b>. 오늘은 학습이 잘 되고 있는지
+      <b>읽는 법</b>을 배웁니다. 그래프가 말을 걸어올 때 알아듣는 것 — 그게 오늘의 전부입니다.</p>
+    <div class="meta">
+      <span>학습 · TRAINING</span><span>2시간</span><span>Google Colab</span>
+      <span>beans · MIT</span><span>ResNet18</span>
+    </div>
+
+    <nav class="roadmap">
+      <a href="#p1"><span class="n">PART 1</span><span class="t">미해결 사건</span>
+        <span class="d">RBC는 왜 졌나</span></a>
+      <a href="#p2"><span class="n">PART 2</span><span class="t">학습의 해부</span>
+        <span class="d">손실 · 기울기 · 보폭</span></a>
+      <a href="#p3"><span class="n">PART 3</span><span class="t">과적합과 위생</span>
+        <span class="d">외운 건가 배운 건가</span></a>
+      <a href="#p4"><span class="n">PART 4</span><span class="t">손잡이 우선순위</span>
+        <span class="d">무엇부터 돌릴까</span></a>
+      <a href="#p5"><span class="n">PART 5</span><span class="t">지표의 선택</span>
+        <span class="d">연구 질문이 정한다</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ PART 1 ============ -->
+<section id="p1">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Part 1 · Cold Case</div>
+      <h2>미해결 사건 — RBC는 왜 졌나</h2>
+      <p class="lead">지난 시간 우리는 이상한 결과를 하나 남기고 헤어졌습니다.
+        <b>학습 데이터가 11배 많았던 적혈구가, 혈소판보다 낮은 점수를 받았습니다.</b>
+        오늘은 여기서 시작합니다.</p>
+    </div>
+
+    <div class="prose">
+      <p>3회차 마지막, 우리는 BCCD 혈액 사진으로 YOLO11n을 파인튜닝했습니다. 클래스는 셋이었죠 —
+        적혈구(RBC), 백혈구(WBC), 혈소판(Platelets). 학습에 쓴 상자 개수는 이랬습니다.</p>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>클래스</th><th class="mono">학습 상자 수</th><th>예상</th><th>실제 결과</th></tr></thead>
+      <tbody>
+        <tr><td><b>RBC</b> 적혈구</td><td class="mono">약 2,300개</td><td>가장 잘할 것</td>
+          <td class="hi">셋 중 <b>가장 낮음</b></td></tr>
+        <tr><td><b>WBC</b> 백혈구</td><td class="mono">약 210개</td><td>보통</td><td>가장 높음</td></tr>
+        <tr><td><b>Platelets</b> 혈소판</td><td class="mono">약 210개</td><td>가장 못할 것</td>
+          <td class="hi">RBC보다 <b>높음</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <p>“데이터가 많을수록 잘한다”는 말은 어디서나 들립니다. 그런데 우리 실험은 그 말을 배신했습니다.
+        모델이 고장 난 걸까요? 아닙니다. <b>그 말이 반쪽짜리였을 뿐입니다.</b></p>
+    </div>
+
+    <div class="figure">
+      <div class="cap"><span class="no">그림 1</span> 왜 적혈구가 더 어려운가</div>
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="적혈구는 서로 겹치고 경계가 모호하며 라벨이 누락된다. 혈소판은 작지만 뚜렷하고 떨어져 있다.">
+        <rect x="14" y="14" width="330" height="182" rx="10" fill="#FBEEEC" stroke="#EDCDC9"/>
+        <rect x="376" y="14" width="330" height="182" rx="10" fill="#ECF4EB" stroke="#CFE3CF"/>
+        <text x="30" y="40" font-family="monospace" font-size="12" fill="#B5453B" letter-spacing="1.5">RBC · 밀집·겹침·라벨누락</text>
+        <text x="392" y="40" font-family="monospace" font-size="12" fill="#2F6B3C" letter-spacing="1.5">PLATELETS · 희소·뚜렷</text>
+
+        <!-- RBC: 겹친 원들 -->
+        <g opacity=".85">
+          <circle cx="78"  cy="92"  r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="112" cy="105" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="146" cy="88"  r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="182" cy="108" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="216" cy="90"  r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="252" cy="106" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="290" cy="92"  r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="128" cy="150" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="196" cy="152" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+          <circle cx="262" cy="150" r="26" fill="#E9A9A2" stroke="#C4776E"/>
+        </g>
+        <rect x="52" y="66" width="52" height="52" fill="none" stroke="#B5453B" stroke-width="2"/>
+        <rect x="120" y="62" width="52" height="52" fill="none" stroke="#B5453B" stroke-width="2"/>
+        <rect x="190" y="64" width="52" height="52" fill="none" stroke="#B5453B" stroke-width="2"/>
+        <rect x="226" y="80" width="52" height="52" fill="none" stroke="#B5453B" stroke-width="2" stroke-dasharray="4 3" opacity=".6"/>
+        <circle cx="290" cy="92" r="30" fill="none" stroke="#8A2B22" stroke-width="2" stroke-dasharray="3 3"/>
+        <text x="264" y="188" font-size="11.5" fill="#8A2B22" font-family="monospace">라벨 없음 → 맞혀도 오탐</text>
+
+        <!-- Platelets: 떨어진 작은 점 -->
+        <circle cx="452" cy="88"  r="9" fill="#6A4C93" stroke="#4A3268"/>
+        <circle cx="556" cy="130" r="9" fill="#6A4C93" stroke="#4A3268"/>
+        <circle cx="640" cy="80"  r="9" fill="#6A4C93" stroke="#4A3268"/>
+        <circle cx="500" cy="158" r="9" fill="#6A4C93" stroke="#4A3268"/>
+        <rect x="438" y="74"  width="28" height="28" fill="none" stroke="#2F6B3C" stroke-width="2"/>
+        <rect x="542" y="116" width="28" height="28" fill="none" stroke="#2F6B3C" stroke-width="2"/>
+        <rect x="626" y="66"  width="28" height="28" fill="none" stroke="#2F6B3C" stroke-width="2"/>
+        <rect x="486" y="144" width="28" height="28" fill="none" stroke="#2F6B3C" stroke-width="2"/>
+        <text x="392" y="188" font-size="11.5" fill="#2F6B3C" font-family="monospace">겹침 없음 → 경계가 분명</text>
+      </svg>
+      <div class="fnote">왼쪽에서 상자를 하나만 남기는 규칙(NMS)이 <b>정상 검출까지 지워버립니다</b>.
+        게다가 BCCD는 겹친 적혈구 상당수가 아예 라벨링되어 있지 않아, 모델이 <b>제대로 찾아도 오답 처리</b>됩니다.</div>
+    </div>
+
+    <div class="terms">
+      <div class="term">
+        <div class="h"><span class="kr">밀집과 겹침</span><span class="en">occlusion</span></div>
+        <div class="d">한 장에 적혈구가 수십 개, 서로 포개져 있습니다. 어디서 하나가 끝나고 다음이
+          시작되는지 사람도 헷갈립니다.</div>
+        <div class="meta"><span class="lbl">여러분 데이터에선</span>
+          밀집 플레이트의 예쁜꼬마선충, 조직 절편 속 면역세포 — 정확히 같은 상황입니다.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">라벨 품질</span><span class="en">label noise</span></div>
+        <div class="d">공개 데이터셋이라고 라벨이 완벽하지 않습니다. 누락된 정답은 모델의 정답을
+          오답으로 만듭니다.</div>
+        <div class="meta"><span class="lbl">여러분 데이터에선</span>
+          2회차에 직접 라벨링해 보셨죠. 그때 애매해서 그냥 넘긴 것들을 떠올려 보세요.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="ico">!</div>
+      <div class="body"><b>사건 종결.</b> 성능을 정하는 건 데이터의 <b>양</b>만이 아닙니다.
+        <b>과제의 난이도</b>와 <b>라벨의 품질</b>이 함께 정합니다.
+        세 가지가 다 갖춰져야 “데이터가 많아서 잘한다”가 성립합니다.</div>
+    </div>
+
+    <div class="prose">
+      <p>그래서 오늘은 변명거리를 미리 없애고 시작하겠습니다. 오늘 쓸 데이터는
+        <b>콩잎 병해 사진(beans)</b>입니다. 우간다 농지에서 찍고 농업 전문가가 직접 라벨링했으며,
+        세 클래스가 거의 똑같은 수로 균형 잡혀 있습니다.</p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 2</span> 오늘의 데이터 — beans</div>
+      <img class="fs-img" data-embed="04_dataset.png" alt="beans 데이터셋 세 클래스 샘플 — 각반병·녹병·건강">
+      <div class="fs-ph"><div class="pic">▦</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 3을 실행하면 이 자리에 세 클래스 샘플이 들어갑니다.</div></div>
+      <div class="fnote">
+        <b>train 1,034 / validation 133 / test 128</b> · 각반병 345 · 녹병 348 · 건강 341.
+        불균형도 라벨 문제도 없습니다. <b>오늘 성능이 안 나오면, 그건 데이터 탓이 아니라 우리 탓입니다.</b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section id="p2">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Part 2 · Anatomy</div>
+      <h2>학습의 해부</h2>
+      <p class="lead">“학습한다”는 말 안에서 실제로 벌어지는 일은 딱 네 단어입니다 —
+        <b>틀린 정도를 재고</b>, <b>어느 쪽으로 고칠지 정하고</b>, <b>얼마나 크게 고칠지 정하고</b>, <b>반복한다</b>.</p>
+    </div>
+
+    <div class="figure">
+      <div class="cap"><span class="no">그림 3</span> 학습 한 걸음의 전부</div>
+      <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="사진이 모델에 들어가 예측이 나오고, 정답과 비교해 손실이 계산되며, 그 값이 다시 모델의 가중치를 고친다">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+            <path d="M0,0 L7,3.2 L0,6.4 z" fill="#5E6E63"/>
+          </marker>
+          <marker id="arR" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+            <path d="M0,0 L7,3.2 L0,6.4 z" fill="#B5622A"/>
+          </marker>
+        </defs>
+
+        <!-- 1 사진 -->
+        <rect x="16" y="56" width="86" height="72" rx="8" fill="#E7F0E5" stroke="#CFE3CF"/>
+        <path d="M32 108 q18 -30 30 -12 q10 -22 26 6 z" fill="#7FA97F"/>
+        <text x="59" y="146" font-size="12" text-anchor="middle" fill="#18241C" font-weight="700">잎 사진</text>
+
+        <line x1="106" y1="92" x2="140" y2="92" stroke="#5E6E63" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- 2 모델 -->
+        <rect x="144" y="48" width="104" height="88" rx="10" fill="#2F6B3C"/>
+        <text x="196" y="88" font-size="13.5" text-anchor="middle" fill="#fff" font-weight="700">모델</text>
+        <text x="196" y="108" font-size="10.5" text-anchor="middle" fill="#C8E2C8" font-family="monospace">weights</text>
+        <text x="196" y="152" font-size="11" text-anchor="middle" fill="#5E6E63">고쳐지는 대상</text>
+
+        <line x1="252" y1="92" x2="286" y2="92" stroke="#5E6E63" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- 3 예측 -->
+        <rect x="290" y="44" width="116" height="96" rx="8" fill="#fff" stroke="#E0EBE0"/>
+        <text x="348" y="62" font-size="11" text-anchor="middle" fill="#5E6E63" font-family="monospace">예측 확률</text>
+        <rect x="302" y="72" width="66" height="12" rx="3" fill="#B5622A"/>
+        <rect x="302" y="92" width="26" height="12" rx="3" fill="#CBD8CB"/>
+        <rect x="302" y="112" width="14" height="12" rx="3" fill="#CBD8CB"/>
+        <text x="376" y="82" font-size="10" fill="#B5622A" font-family="monospace">녹병 .62</text>
+        <text x="376" y="102" font-size="10" fill="#8B978C" font-family="monospace">각반 .25</text>
+        <text x="376" y="122" font-size="10" fill="#8B978C" font-family="monospace">건강 .13</text>
+
+        <line x1="410" y1="92" x2="444" y2="92" stroke="#5E6E63" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- 4 정답 대조 -->
+        <rect x="448" y="52" width="100" height="80" rx="8" fill="#FBF1E9" stroke="#E8CDB4"/>
+        <text x="498" y="76" font-size="11.5" text-anchor="middle" fill="#5E6E63">정답은</text>
+        <text x="498" y="99" font-size="14" text-anchor="middle" fill="#7A5230" font-weight="700">각반병</text>
+        <text x="498" y="119" font-size="10.5" text-anchor="middle" fill="#B5622A" font-family="monospace">틀렸다</text>
+
+        <line x1="552" y1="92" x2="586" y2="92" stroke="#5E6E63" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- 5 손실 -->
+        <circle cx="640" cy="92" r="44" fill="#B5622A"/>
+        <text x="640" y="86" font-size="11" text-anchor="middle" fill="#F6DCC8" font-family="monospace">손실</text>
+        <text x="640" y="108" font-size="19" text-anchor="middle" fill="#fff" font-weight="800">1.42</text>
+
+        <!-- 역전파 -->
+        <path d="M640 140 L640 196 L196 196 L196 144" fill="none" stroke="#B5622A"
+              stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arR)"/>
+        <rect x="330" y="180" width="196" height="30" rx="6" fill="#FBF1E9" stroke="#E8CDB4"/>
+        <text x="428" y="200" font-size="12" text-anchor="middle" fill="#7A5230" font-weight="700">
+          이만큼 틀렸으니 이만큼 고쳐라</text>
+        <text x="428" y="234" font-size="11.5" text-anchor="middle" fill="#5E6E63">
+          이 한 바퀴가 1 스텝. 수천 바퀴 돌면 “학습”입니다.</text>
+      </svg>
+      <div class="fnote"><b>손실(loss)</b>은 “얼마나 틀렸나”를 숫자 하나로 압축한 값입니다.
+        학습이란 이 숫자를 낮추는 방향으로 가중치를 조금씩 미는 작업 그 이상도 이하도 아닙니다.</div>
+    </div>
+
+    <div class="terms">
+      <div class="term">
+        <div class="h"><span class="kr">손실</span><span class="en">loss</span></div>
+        <div class="d">틀린 정도를 숫자 하나로. <b>낮을수록</b> 좋습니다. 정확도와 달리 “아깝게 틀렸는지
+          완전히 틀렸는지”까지 담깁니다.</div>
+        <div class="meta"><span class="lbl">그래프에서</span> 아래로 내려가면 배우는 중입니다.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">기울기</span><span class="en">gradient</span></div>
+        <div class="d">“어느 방향으로 밀어야 손실이 줄어드는가”. 방향만 알려줄 뿐,
+          <b>얼마나 갈지는 말해주지 않습니다.</b></div>
+        <div class="meta"><span class="lbl">비유</span> 안개 속에서 발밑 경사만 느끼는 상태.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">학습률</span><span class="en">learning rate</span></div>
+        <div class="d">한 걸음의 <b>보폭</b>. 오늘 배울 손잡이 중 <b>가장 중요한 하나</b>입니다.
+          이것만 잘못 잡아도 나머지가 전부 무의미해집니다.</div>
+        <div class="meta"><span class="lbl">흔한 값</span> 0.1 · 0.01 · 0.001 · 0.0001</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">에폭 / 배치</span><span class="en">epoch / batch</span></div>
+        <div class="d"><b>배치</b>는 한 번에 보는 사진 묶음(예: 32장), <b>에폭</b>은 전체 데이터를
+          한 바퀴 다 본 것. 300장을 32장씩 보면 1 에폭 = 10 스텝입니다.</div>
+        <div class="meta"><span class="lbl">주의</span> 에폭은 “시간”이지 “실력”이 아닙니다.</div>
+      </div>
+    </div>
+
+    <div class="figure">
+      <div class="cap"><span class="no">그림 4</span> 보폭 — 같은 언덕, 다른 학습률</div>
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="학습률이 크면 골짜기를 튕겨나가고, 적당하면 바닥에 안착하고, 작으면 기어가다 못 도착한다">
+        <g>
+          <text x="118" y="20" font-size="12.5" text-anchor="middle" fill="#B5453B" font-weight="700">너무 큼 · 0.1</text>
+          <path d="M28,44 Q118,224 208,44" fill="none" stroke="#CBD8CB" stroke-width="2.5"/>
+          <circle cx="118" cy="144" r="3" fill="#8B978C"/>
+          <circle r="8" fill="#B5453B">
+            <animate attributeName="cx" dur="3.4s" repeatCount="indefinite"
+              values="58;118;186;118;36;200;24" keyTimes="0;0.16;0.33;0.5;0.66;0.85;1"/>
+            <animate attributeName="cy" dur="3.4s" repeatCount="indefinite"
+              values="88;144;100;144;68;54;40" keyTimes="0;0.16;0.33;0.5;0.66;0.85;1"/>
+          </circle>
+          <text x="118" y="192" font-size="11" text-anchor="middle" fill="#8B978C">튕겨나가 발산</text>
+        </g>
+        <g transform="translate(240,0)">
+          <text x="118" y="20" font-size="12.5" text-anchor="middle" fill="#2F6B3C" font-weight="700">적당 · 0.001</text>
+          <path d="M28,44 Q118,224 208,44" fill="none" stroke="#CBD8CB" stroke-width="2.5"/>
+          <circle cx="118" cy="144" r="3" fill="#8B978C"/>
+          <circle r="8" fill="#2F6B3C">
+            <animate attributeName="cx" dur="3.4s" repeatCount="indefinite"
+              values="58;118;158;118;134;118;118" keyTimes="0;0.18;0.36;0.54;0.72;0.88;1"/>
+            <animate attributeName="cy" dur="3.4s" repeatCount="indefinite"
+              values="88;144;128;144;140;144;144" keyTimes="0;0.18;0.36;0.54;0.72;0.88;1"/>
+          </circle>
+          <text x="118" y="192" font-size="11" text-anchor="middle" fill="#8B978C">몇 번 출렁이고 안착</text>
+        </g>
+        <g transform="translate(480,0)">
+          <text x="118" y="20" font-size="12.5" text-anchor="middle" fill="#B7791F" font-weight="700">너무 작음 · 0.000001</text>
+          <path d="M28,44 Q118,224 208,44" fill="none" stroke="#CBD8CB" stroke-width="2.5"/>
+          <circle cx="118" cy="144" r="3" fill="#8B978C"/>
+          <circle r="8" fill="#B7791F">
+            <animate attributeName="cx" dur="3.4s" repeatCount="indefinite"
+              values="58;62;66;70;73;76;78" keyTimes="0;0.17;0.34;0.5;0.67;0.84;1"/>
+            <animate attributeName="cy" dur="3.4s" repeatCount="indefinite"
+              values="88;93;98;103;107;110;112" keyTimes="0;0.17;0.34;0.5;0.67;0.84;1"/>
+          </circle>
+          <text x="118" y="192" font-size="11" text-anchor="middle" fill="#8B978C">시간만 쓰고 제자리</text>
+        </g>
+      </svg>
+      <div class="fnote">골짜기 바닥이 “가장 잘하는 상태”입니다. 문제는 <b>안개 속</b>이라 바닥이 어딘지
+        모른 채 발밑 경사만 보고 걷는다는 것. 보폭이 너무 크면 매번 지나쳐 버리고, 너무 작으면
+        수업 시간 안에 도착하지 못합니다.</div>
+    </div>
+
+    <div class="prose">
+      <p>말로만 들으면 그럴싸합니다. 그래서 실제로 돌려봤습니다.
+        <b>데이터도 모델도 학습 시간도 똑같이 두고, 바꾼 건 숫자 하나</b> — 학습률뿐입니다.</p>
+    </div>
+
+    <!-- 학습률 슬라이더 -->
+    <div class="lrs" id="lrslider">
+      <div class="cap"><span class="no">인터랙티브</span> 학습률을 직접 움직여 보세요</div>
+      <div class="stagebox">
+        <img class="cs-img is-on" data-embed="04_lr_1e-1.png" data-i="0" alt="학습률 0.1 학습곡선">
+        <img class="cs-img"       data-embed="04_lr_1e-2.png" data-i="1" alt="학습률 0.01 학습곡선">
+        <img class="cs-img"       data-embed="04_lr_1e-3.png" data-i="2" alt="학습률 0.001 학습곡선">
+        <img class="cs-img"       data-embed="04_lr_1e-4.png" data-i="3" alt="학습률 0.0001 학습곡선">
+        <img class="cs-img"       data-embed="04_lr_1e-6.png" data-i="4" alt="학습률 0.000001 학습곡선">
+        <div class="cs-ph"><div class="pic">◐</div>
+          <div class="pt">노트북 <b>01_train_lab</b> 셀 5를 실행하면 학습률 5종의 곡선이 이 자리에 들어갑니다.</div></div>
+      </div>
+      <div class="ctl">
+        <label for="lrRange">학습률</label>
+        <input type="range" id="lrRange" min="0" max="4" step="1" value="0" aria-label="학습률 선택">
+        <span class="val" id="lrValue">0.1</span>
+      </div>
+      <div class="ticks">
+        <span class="cs-tick is-on" data-i="0">0.1</span>
+        <span class="cs-tick" data-i="1">0.01</span>
+        <span class="cs-tick" data-i="2">0.001</span>
+        <span class="cs-tick" data-i="3">0.0001</span>
+        <span class="cs-tick" data-i="4">0.000001</span>
+      </div>
+      <div class="verdict" id="lrVerdict"></div>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 5</span> 다섯 개를 한 장에 겹쳐 보면</div>
+      <img class="fs-img" data-embed="04_lr_compare.png" alt="학습률 5종의 검증 정확도 곡선 비교">
+      <div class="fs-ph"><div class="pic">◈</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 5의 비교 그림이 들어갑니다.</div></div>
+      <div class="fnote">같은 데이터, 같은 모델, 같은 시간. <b>바뀐 건 숫자 하나뿐입니다.</b>
+        논문에 “학습률 0.001을 사용했다”고 한 줄 적혀 있는 그 문장이, 사실은 이만큼의 차이를 감추고 있습니다.</div>
+    </div>
+
+    <div class="callout tip">
+      <div class="ico">→</div>
+      <div class="body"><b>실전 요령.</b> 어디서 시작할지 모르겠다면 <b>0.001</b>에서 시작해
+        10배씩 올리고 내려 보세요. 손실이 <b>NaN</b>이 되거나 정확도가 33%(찍기)에서 안 움직이면
+        보폭이 너무 큰 것이고, 곡선이 거의 평평하면 너무 작은 것입니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section id="p3">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Part 3 · Overfitting &amp; Hygiene</div>
+      <h2>외운 건가, 배운 건가</h2>
+      <p class="lead">학습을 오래 돌리면 성적표는 계속 좋아집니다. 문제는 그 성적표가
+        <b>이미 본 문제로 친 시험</b>이라는 것입니다.</p>
+    </div>
+
+    <div class="prose">
+      <p>기출문제 300개를 통째로 외운 학생이 있습니다. 기출로 시험을 보면 100점입니다.
+        그런데 처음 보는 문제를 주면 무너집니다. <b>모델도 똑같이 합니다.</b>
+        그리고 데이터가 적을수록 더 빨리, 더 확실하게 그렇게 됩니다.</p>
+    </div>
+
+    <div class="figure">
+      <div class="cap"><span class="no">그림 6</span> 같은 점들, 세 가지 태도</div>
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="과소적합은 너무 단순한 직선, 적당한 것은 부드러운 곡선, 과적합은 모든 점을 지나는 구불구불한 선">
+        <g>
+          <rect x="16" y="30" width="200" height="130" rx="8" fill="#fff" stroke="#E0EBE0"/>
+          <text x="116" y="22" font-size="12.5" text-anchor="middle" fill="#B7791F" font-weight="700">과소적합</text>
+          <path d="M34,132 L200,62" fill="none" stroke="#B7791F" stroke-width="2.5"/>
+          <g fill="#5E6E63">
+            <circle cx="44" cy="140" r="4"/><circle cx="72" cy="112" r="4"/><circle cx="98" cy="122" r="4"/>
+            <circle cx="124" cy="86" r="4"/><circle cx="150" cy="98" r="4"/><circle cx="176" cy="58" r="4"/>
+            <circle cx="196" cy="72" r="4"/>
+          </g>
+          <text x="116" y="180" font-size="11" text-anchor="middle" fill="#8B978C">너무 단순 — 둘 다 못함</text>
+        </g>
+        <g transform="translate(252,0)">
+          <rect x="16" y="30" width="200" height="130" rx="8" fill="#fff" stroke="#CFE3CF"/>
+          <text x="116" y="22" font-size="12.5" text-anchor="middle" fill="#2F6B3C" font-weight="700">적당</text>
+          <path d="M34,138 Q90,104 124,96 Q166,86 200,58" fill="none" stroke="#2F6B3C" stroke-width="2.5"/>
+          <g fill="#5E6E63">
+            <circle cx="44" cy="140" r="4"/><circle cx="72" cy="112" r="4"/><circle cx="98" cy="122" r="4"/>
+            <circle cx="124" cy="86" r="4"/><circle cx="150" cy="98" r="4"/><circle cx="176" cy="58" r="4"/>
+            <circle cx="196" cy="72" r="4"/>
+          </g>
+          <text x="116" y="180" font-size="11" text-anchor="middle" fill="#8B978C">규칙을 배움 — 새 문제도 됨</text>
+        </g>
+        <g transform="translate(488,0)">
+          <rect x="16" y="30" width="200" height="130" rx="8" fill="#fff" stroke="#EDCDC9"/>
+          <text x="116" y="22" font-size="12.5" text-anchor="middle" fill="#B5453B" font-weight="700">과적합</text>
+          <path d="M44,140 L72,112 L98,122 L124,86 L150,98 L176,58 L196,72"
+                fill="none" stroke="#B5453B" stroke-width="2.5"/>
+          <g fill="#5E6E63">
+            <circle cx="44" cy="140" r="4"/><circle cx="72" cy="112" r="4"/><circle cx="98" cy="122" r="4"/>
+            <circle cx="124" cy="86" r="4"/><circle cx="150" cy="98" r="4"/><circle cx="176" cy="58" r="4"/>
+            <circle cx="196" cy="72" r="4"/>
+          </g>
+          <text x="116" y="180" font-size="11" text-anchor="middle" fill="#8B978C">점을 외움 — 새 문제엔 무력</text>
+        </g>
+      </svg>
+      <div class="fnote">오른쪽은 학습 데이터에서 <b>완벽한 100점</b>입니다. 그런데 쓸모는 가운데가 훨씬 큽니다.
+        <b>학습 성적이 좋다는 건 좋은 신호가 아닐 수 있습니다.</b></div>
+    </div>
+
+    <div class="prose">
+      <p>그럼 외웠는지 배웠는지 어떻게 압니까? <b>안 본 문제로 시험을 치면 됩니다.</b>
+        그래서 데이터를 처음부터 갈라 둡니다.</p>
+    </div>
+
+    <div class="figure">
+      <div class="cap"><span class="no">그림 7</span> 세 갈래로 나누는 이유</div>
+      <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="학습 세트는 공부용, 검증 세트는 모의고사, 테스트 세트는 봉인된 실전 시험">
+        <rect x="16" y="34" width="300" height="86" rx="10" fill="#ECF4EB" stroke="#CFE3CF"/>
+        <text x="166" y="62" font-size="14" text-anchor="middle" fill="#1D4826" font-weight="800">train · 학습</text>
+        <text x="166" y="84" font-size="11.5" text-anchor="middle" fill="#5E6E63">모델이 보고 외우는 교과서</text>
+        <text x="166" y="104" font-size="11" text-anchor="middle" fill="#2F6B3C" font-family="monospace">1,034장</text>
+
+        <rect x="330" y="34" width="180" height="86" rx="10" fill="#FBF1E9" stroke="#E8CDB4"/>
+        <text x="420" y="62" font-size="14" text-anchor="middle" fill="#7A5230" font-weight="800">validation · 검증</text>
+        <text x="420" y="84" font-size="11.5" text-anchor="middle" fill="#5E6E63">손잡이 고를 때 쓰는 모의고사</text>
+        <text x="420" y="104" font-size="11" text-anchor="middle" fill="#B5622A" font-family="monospace">133장</text>
+
+        <rect x="524" y="34" width="180" height="86" rx="10" fill="#F2F5F2" stroke="#CBD8CB"
+              stroke-dasharray="6 4"/>
+        <text x="614" y="62" font-size="14" text-anchor="middle" fill="#3A4A3E" font-weight="800">test · 시험</text>
+        <text x="614" y="84" font-size="11.5" text-anchor="middle" fill="#5E6E63">봉인. 마지막에 한 번</text>
+        <text x="614" y="104" font-size="11" text-anchor="middle" fill="#5E6E63" font-family="monospace">128장</text>
+        <g transform="translate(676,42)">
+          <rect x="0" y="6" width="16" height="12" rx="2" fill="#3A4A3E"/>
+          <path d="M3,6 v-3 a5,5 0 0 1 10,0 v3" fill="none" stroke="#3A4A3E" stroke-width="2"/>
+        </g>
+
+        <text x="360" y="156" font-size="12.5" text-anchor="middle" fill="#B5453B" font-weight="700">
+          test 결과를 보고 설정을 또 바꾸면, test는 더 이상 test가 아닙니다</text>
+        <text x="360" y="176" font-size="11.5" text-anchor="middle" fill="#8B978C">
+          그 순간 test는 두 번째 validation이 되고, 논문의 숫자는 부풀려집니다</text>
+      </svg>
+      <div class="fnote"><b>왜 굳이 셋인가.</b> 둘만 있으면 손잡이를 고를 때마다 그 세트를 보게 되고,
+        결국 <b>그 세트에 맞춰 튜닝</b>하게 됩니다. 그러면 “처음 보는 데이터에서의 성능”이라고
+        말할 근거가 사라집니다.</div>
+    </div>
+
+    <div class="prose">
+      <p>이제 실제 곡선을 봅시다. 콩잎 300장으로 30 에폭을 돌렸습니다.
+        <b>파란 선(학습)과 주황 선(검증)이 언제부터 갈라지는지</b>만 보세요.</p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 8</span> 과적합이 시작되는 순간</div>
+      <img class="fs-img" data-embed="04_overfit.png" alt="학습 정확도와 검증 정확도가 벌어지는 그래프">
+      <div class="fs-ph"><div class="pic">◢</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 6의 과적합 그래프가 들어갑니다.</div></div>
+      <div class="fnote">두 선이 벌어지기 시작하는 지점 — 그 뒤로는 <b>실력이 아니라 암기가 늘고 있습니다.</b>
+        검증 성적이 가장 좋았던 지점에서 멈추고 그때의 가중치를 쓰는 것,
+        이게 <span class="en">early stopping</span>입니다.</div>
+    </div>
+
+    <div class="terms">
+      <div class="term">
+        <div class="h"><span class="kr">조기 종료</span><span class="en">early stopping</span></div>
+        <div class="d">검증 성적이 <b>N 에폭 동안 나아지지 않으면</b> 멈춥니다. 그 N을
+          <span class="en">patience</span>라 부릅니다(보통 10~20).</div>
+        <div class="meta"><span class="lbl">덤</span> 시간도 GPU 할당량도 아낍니다.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">최고 가중치 저장</span><span class="en">best checkpoint</span></div>
+        <div class="d">끝까지 돌리되 <b>검증 최고점의 가중치를 따로 저장</b>합니다.
+          마지막 에폭의 모델이 최고인 경우는 오히려 드뭅니다.</div>
+        <div class="meta"><span class="lbl">3회차 연결</span> YOLO의 <span class="en">best.pt</span>가 바로 이것이었습니다.</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="ico">✕</div>
+      <div class="body"><b>논문에서 자주 새는 곳.</b> 증강한 이미지가 train과 val에 나눠 들어가거나,
+        같은 개체·같은 슬라이드·같은 배양 접시에서 나온 사진이 양쪽에 걸치면
+        <b>검증 성적이 통째로 거짓말이 됩니다.</b> 나누는 단위를 “사진”이 아니라
+        <b>“개체·시료·촬영 세션”</b>으로 잡으세요.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<section id="p4">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Part 4 · Knobs</div>
+      <h2>무엇부터 돌릴까</h2>
+      <p class="lead">손잡이는 수십 개입니다. 전부 다 돌려볼 시간은 없습니다.
+        <b>효과가 큰 순서대로, 한 번에 하나씩.</b></p>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>순위</th><th>손잡이</th><th>효과</th><th>먼저 해볼 값</th><th>오늘</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td><b>1</b></td><td><b>학습률</b> <span class="mono">lr</span></td>
+          <td>압도적. 이게 틀리면 나머지가 무의미</td>
+          <td class="mono">0.001에서 10배씩 위아래</td><td>라이브 실험</td></tr>
+        <tr class="hi"><td><b>2</b></td><td><b>데이터 증강</b> <span class="mono">augmentation</span></td>
+          <td>큼. 특히 데이터가 적을 때</td><td class="mono">뒤집기·회전·밝기</td><td>라이브 실험</td></tr>
+        <tr class="hi"><td><b>3</b></td><td><b>에폭 수</b> <span class="mono">epochs</span></td>
+          <td>중간. 조기 종료가 있으면 덜 중요해짐</td><td class="mono">넉넉히 + early stopping</td>
+          <td>라이브 실험</td></tr>
+        <tr><td>4</td><td>동결 범위 <span class="mono">freeze</span></td>
+          <td>데이터가 아주 적을 때 큼</td><td class="mono">뒷단만 학습 → 전체 학습</td><td>표로만</td></tr>
+        <tr><td>5</td><td>배치 크기 <span class="mono">batch</span></td>
+          <td>주로 속도·메모리. 성능 영향은 작음</td><td class="mono">GPU가 감당하는 최대</td><td>표로만</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="ico">1</div>
+      <div class="body"><b>한 번에 하나만 바꾸세요.</b> 학습률과 증강을 동시에 바꿔서 좋아지면,
+        무엇 덕분인지 영원히 알 수 없습니다. 실험 노트에 <b>바꾼 것 하나 · 결과 하나</b>씩 적으세요.
+        이건 여러분이 벤치에서 늘 하시던 것과 정확히 같습니다.</div>
+    </div>
+
+    <div class="prose">
+      <p>2회차에 배운 <b>증강</b>이 여기서 회수됩니다. 사진을 뒤집고 돌리고 밝기를 바꿔서
+        “같은 잎인데 다르게 찍힌 사진”을 만들어 주는 것. 데이터를 새로 모으지 않고
+        <b>외우기 어렵게 만드는</b> 방법입니다.</p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 9</span> 증강을 켰을 때 / 껐을 때</div>
+      <img class="fs-img" data-embed="04_aug.png" alt="증강 유무에 따른 검증 정확도 곡선 비교">
+      <div class="fs-ph"><div class="pic">◑</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 7의 증강 비교 그림이 들어갑니다.</div></div>
+      <div class="fnote">설정은 완전히 같고 <b>증강만 켰습니다.</b>
+        새 사진은 한 장도 추가하지 않았습니다.</div>
+    </div>
+
+    <div class="callout warn">
+      <div class="ico">✕</div>
+      <div class="body"><b>증강은 학습 세트에만.</b> 검증·시험 세트를 증강하면 시험 문제를
+        내 마음대로 바꾸는 셈입니다. 그리고 <b>말이 되는 증강만</b> 쓰세요 —
+        염색 이미지에서 색을 마구 바꾸면 진단 근거 자체가 사라지고,
+        위아래가 의미 있는 조직 절편에서 상하 반전은 없는 현상을 가르치는 것입니다.</div>
+    </div>
+
+    <div class="callout tip">
+      <div class="ico">?</div>
+      <div class="body"><b>예상과 다르게 나왔다면?</b> 그것도 결과입니다.
+        오늘 증강 효과가 작거나 오히려 나빴다면, 그건 실패가 아니라
+        <b>“이 데이터·이 조건에서는 그렇다”는 발견</b>입니다.
+        Part 1의 적혈구가 정확히 그런 경우였습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 5 ============ -->
+<section id="p5">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Part 5 · Metrics</div>
+      <h2>지표는 연구 질문이 정한다</h2>
+      <p class="lead">정확도 92%는 좋은 성적일까요? <b>무엇을 하려는지 말해주기 전까지는
+        대답할 수 없습니다.</b></p>
+    </div>
+
+    <div class="prose">
+      <p>정확도 하나로는 모델이 <b>어떻게</b> 틀리는지 보이지 않습니다.
+        그래서 틀린 방식을 표로 펼칩니다.</p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 10</span> 혼동행렬 — 어디서 헷갈리는가</div>
+      <img class="fs-img" data-embed="04_confusion.png" alt="세 클래스 혼동행렬">
+      <div class="fs-ph"><div class="pic">▣</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 8의 혼동행렬이 들어갑니다.</div></div>
+      <div class="fnote">대각선이 맞힌 것, 나머지가 틀린 것. <b>어느 칸이 두꺼운지</b>가
+        “무엇을 무엇으로 착각하는가”를 알려줍니다. 각반병을 녹병으로 보는 것과
+        병든 잎을 건강하다고 보는 것은 <b>실무에서 무게가 전혀 다릅니다.</b></div>
+    </div>
+
+    <div class="terms">
+      <div class="term">
+        <div class="h"><span class="kr">정밀도</span><span class="en">precision</span></div>
+        <div class="d">“병이라고 한 것 중 진짜 병인 비율”. 낮으면 <b>헛경보</b>가 많습니다.</div>
+        <div class="meta"><span class="lbl">중요해지는 때</span> 양성 판정에 비싼 후속 작업이 따를 때.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">재현율</span><span class="en">recall</span></div>
+        <div class="d">“진짜 병인 것 중 잡아낸 비율”. 낮으면 <b>놓칩니다</b>.</div>
+        <div class="meta"><span class="lbl">중요해지는 때</span> 놓치면 큰일 나는 희귀 사건일 때.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">F1</span><span class="en">F1 score</span></div>
+        <div class="d">정밀도와 재현율의 조화평균. <b>어느 한쪽만 높으면 점수가 안 오릅니다.</b>
+          한쪽으로 치우친 모델을 걸러냅니다.</div>
+        <div class="meta"><span class="lbl">쓰는 때</span> 둘 다 중요하고 우선순위를 못 정할 때.</div>
+      </div>
+      <div class="term">
+        <div class="h"><span class="kr">Dice</span><span class="en">Dice / IoU</span></div>
+        <div class="d">분할(segmentation)에서 쓰는 겹침 비율. <b>Dice는 F1과 수식이 같습니다</b> —
+          이름만 다를 뿐입니다.</div>
+        <div class="meta"><span class="lbl">쓰는 때</span> 세포 면적·영역 경계를 재는 연구. 의료영상 논문의 기본 지표.</div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>여기서 중요한 건 이겁니다. <b>정밀도와 재현율은 동시에 올리기 어렵습니다.</b>
+        모델의 판정 기준선(임계값)을 낮추면 더 많이 잡아내지만 헛경보가 늘고,
+        올리면 헛경보는 줄지만 놓칩니다. <b>기울어진 시소입니다.</b></p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 11</span> 시소 — 임계값을 움직이면</div>
+      <img class="fs-img" data-embed="04_tradeoff.png" alt="임계값에 따른 정밀도와 재현율의 트레이드오프 곡선">
+      <div class="fs-ph"><div class="pic">◇</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 8의 트레이드오프 곡선이 들어갑니다.</div></div>
+      <div class="fnote">3회차의 <span class="en">conf</span> 슬라이더를 기억하시나요?
+        그때 손으로 움직였던 그 값이 바로 이 임계값입니다. <b>모델은 하나인데 성적표가 여러 개인 이유</b>가 여기 있습니다.</div>
+    </div>
+
+    <div class="callout">
+      <div class="ico">◆</div>
+      <div class="body"><b>그래서 어디에 맞출 것인가.</b> 이건 모델이 답할 수 없는 질문입니다.
+        <b>연구 질문이 정합니다.</b> 놓치는 비용과 헛경보 비용 중 어느 쪽이 비싼지 —
+        그건 여러분만 압니다.</div>
+    </div>
+
+    <div class="prose">
+      <p>네 분의 주제에 대입해 보면 이렇게 갈립니다.</p>
+    </div>
+
+    <div class="topics">
+      <div class="topic">
+        <div class="t">PDA 비색 센서</div>
+        <div class="q">색 변화로 표적을 검출</div>
+        <span class="pick">정밀도 우선</span>
+        <div class="why">헛양성 하나가 “검출됐다”는 결론을 통째로 흔듭니다.
+          경계 근처는 차라리 <b>판정 보류</b>로 빼는 편이 안전합니다.</div>
+      </div>
+      <div class="topic">
+        <div class="t">예쁜꼬마선충 행동</div>
+        <div class="q">개체를 추적해 움직임을 정량화</div>
+        <span class="pick">재현율 우선 · 밀집 주의</span>
+        <div class="why">놓친 개체는 통계에서 사라져 버립니다. 그리고
+          <b>Part 1의 적혈구 문제가 그대로 재현되는 자리</b>입니다 — 겹친 개체를 어떻게 셀 것인지 미리 정하세요.</div>
+      </div>
+      <div class="topic">
+        <div class="t">TME 면역세포</div>
+        <div class="q">조직 내 면역세포 분포·비율</div>
+        <span class="pick">클래스별로 따로</span>
+        <div class="why">희귀 세포군은 전체 정확도에 거의 영향을 못 줍니다.
+          <b>전체 지표 하나만 보면 희귀 세포는 통째로 실종됩니다.</b> 반드시 클래스별로 보세요.</div>
+      </div>
+      <div class="topic">
+        <div class="t">LSPR 광학 소재</div>
+        <div class="q">나노구조 형태·크기 분포</div>
+        <span class="pick">Dice / IoU</span>
+        <div class="why">“몇 개인가”보다 <b>“경계가 정확한가”</b>가 중요합니다.
+          크기 분포를 재는 순간 지표는 검출이 아니라 분할 쪽으로 넘어갑니다.</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="ico">✕</div>
+      <div class="body"><b>지표를 결과 보고 고르지 마세요.</b> 여러 지표를 다 계산해 놓고
+        가장 잘 나온 걸 논문에 쓰는 건, test 세트를 여러 번 여는 것과 같은 종류의 반칙입니다.
+        <b>실험 전에 정하고, 그대로 보고하세요.</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 마무리 ============ -->
+<section class="outro">
+  <div class="wrap">
+    <div class="eyebrow">Wrap-up</div>
+    <h2>오늘 가져가실 것</h2>
+
+    <div class="checks">
+      <ol>
+        <li><b>데이터 양은 성능의 한 축일 뿐이다.</b> 난이도와 라벨 품질이 함께 정한다.</li>
+        <li><b>학습률이 첫 번째 손잡이다.</b> 0.001에서 10배씩 위아래로.</li>
+        <li><b>학습 성적이 좋은 건 좋은 신호가 아닐 수 있다.</b> 검증 곡선이 갈라지는 지점을 보라.</li>
+        <li><b>test는 마지막에 딱 한 번.</b> 열어본 뒤 튜닝하면 그 숫자는 논문에 못 쓴다.</li>
+        <li><b>한 번에 하나만 바꾼다.</b> 벤치에서 하던 그대로.</li>
+        <li><b>지표는 연구 질문이 정한다.</b> 실험 전에 정하고 그대로 보고한다.</li>
+      </ol>
+    </div>
+
+    <div class="prose">
+      <p>그리고 마지막으로, 오늘 만든 실험 노트북은 <b>콩잎에만 쓰라는 법이 없습니다.</b>
+        폴더 이름만 바꾸면 여러분의 사진으로 그대로 돌아갑니다.
+        <span class="en">data/</span> 아래 클래스 이름으로 폴더를 만들고 사진을 넣으면 끝입니다.</p>
+    </div>
+
+    <div class="callout tip">
+      <div class="ico">▶</div>
+      <div class="body"><b>보너스 · 웹캠 데모.</b> 노트북 <b>02_pose_demo</b>를 열면
+        여러분의 손 사진에서 관절 21개를, 사람 사진에서 관절 17개를 찾아 스켈레톤을 그립니다.
+        학습은 한 줄도 하지 않습니다 — <b>이미 학습된 모델을 가져다 쓰는 것</b>만으로
+        되는 일이 이만큼 있다는 뜻입니다.</div>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>보너스 모델</th><th>찾는 것</th><th>키포인트</th><th>라이선스</th></tr></thead>
+      <tbody>
+        <tr><td><b>MediaPipe HandLandmarker</b></td><td>손</td><td class="mono">21개</td>
+          <td class="mono">Apache-2.0</td></tr>
+        <tr class="hi"><td><b>YOLO11n-pose</b></td><td>사람</td><td class="mono">17개</td>
+          <td class="mono">AGPL-3.0 ⚠</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="ico">§</div>
+      <div class="body"><b>3회차 라이선스 함정, 그대로 유효합니다.</b>
+        YOLO 계열은 <b>AGPL-3.0</b>입니다. 연구·논문은 괜찮지만,
+        이걸 넣은 소프트웨어를 배포하거나 서비스로 제공하면 <b>소스 공개 의무</b>가 따라옵니다.
+        MediaPipe는 Apache-2.0이라 그 부담이 없습니다. <b>모델을 고를 때 라이선스도 성능만큼 봐야 합니다.</b></div>
+    </div>
+
+    <hr class="sep">
+    <div class="footnote">
+      <b>데이터.</b> beans (ibean) — Makerere AI Lab &amp; NaCRRI, 우간다 농지 촬영, 농업 전문가 라벨링.
+      MIT 라이선스. train 1,034 / validation 133 / test 128, 500×500 RGB.<br>
+      <b>모델.</b> ResNet18 (ImageNet 사전학습, torchvision) · YOLO11n-pose (Ultralytics, AGPL-3.0)
+      · MediaPipe HandLandmarker (Google, Apache-2.0).<br>
+      <b>그림.</b> 노트북 <span class="en">01_train_lab</span>이 실제로 학습을 돌려 만든 결과를
+      <span class="en">03_build_html</span>이 이 문서에 끼워 넣습니다. 여러분이 다시 돌리면 숫자가 조금씩 달라집니다 —
+      그게 정상입니다.<br>
+      <b>박사후연구원 학습공동체</b> · 4회차 · 학습(Training)
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var p=document.getElementById('progress');
+  if(!p) return;
+  function upd(){
+    var h=document.documentElement, sc=h.scrollTop||document.body.scrollTop,
+        mx=h.scrollHeight-h.clientHeight;
+    p.style.width=(mx>0?(sc/mx*100):0)+'%';
+  }
+  window.addEventListener('scroll',upd,{passive:true});
+  window.addEventListener('resize',upd); upd();
+})();
+
+(function(){
+  var box=document.getElementById('lrslider');
+  if(!box) return;
+  var range=document.getElementById('lrRange'),
+      value=document.getElementById('lrValue'),
+      verdict=document.getElementById('lrVerdict'),
+      imgs=box.querySelectorAll('.cs-img'),
+      ticks=box.querySelectorAll('.cs-tick');
+  var LR=['0.1','0.01','0.001','0.0001','0.000001'];
+  var SAY=[
+    '<b>보폭이 너무 큽니다.</b> 골짜기를 매번 지나쳐 손실이 튀거나 NaN이 됩니다. 정확도가 33%(세 클래스 찍기)에서 안 움직인다면 거의 이 경우입니다.',
+    '<b>아직 큽니다.</b> 초반엔 빠르게 내려가는 듯하다가 곧 요동칩니다. 곡선이 위아래로 심하게 흔들리면 10배 낮춰 보세요.',
+    '<b>보통 여기서 시작합니다.</b> 부드럽게 내려가 안정적으로 수렴합니다. 어디서 시작할지 모르겠다면 이 값입니다.',
+    '<b>안전하지만 느립니다.</b> 잘 내려가긴 하는데 같은 시간에 덜 갑니다. 에폭을 늘릴 여유가 있을 때 쓸 만합니다.',
+    '<b>보폭이 너무 작습니다.</b> 곡선이 거의 평평합니다. 모델이 고장 난 게 아니라 <b>제자리걸음</b>인 것 — 시간만 쓰고 있습니다.'
+  ];
+  function setIdx(i){
+    i=Math.max(0,Math.min(LR.length-1,i|0));
+    var any=false;
+    imgs.forEach(function(im,k){
+      var on=(k===i);
+      im.classList.toggle('is-on',on);
+      if(on && im.getAttribute('src')) any=true;
+    });
+    box.classList.toggle('has-img',any);
+    ticks.forEach(function(t,k){ t.classList.toggle('is-on',k===i); });
+    if(value) value.textContent=LR[i];
+    if(verdict) verdict.innerHTML=SAY[i];
+    if(range.value!=i) range.value=i;
+  }
+  range.addEventListener('input',function(){ setIdx(parseInt(range.value,10)); });
+  ticks.forEach(function(t){
+    t.addEventListener('click',function(){ setIdx(parseInt(t.getAttribute('data-i'),10)); });
+  });
+  setIdx(0);
+})();
+</script>
+</body>
+</html>

@@ -8,8 +8,10 @@
 | 세션 | 주제 | 바로가기 |
 |---|---|---|
 | **session2** | 분류·감지·분할 개념 체험 + 데이터 형식·증강 | [session2/README.md](session2/README.md) |
+| **session3** | 전이학습(파인튜닝) — YOLO11n 을 혈액 데이터로 | [session3/README.md](session3/README.md) |
+| **session4** | 학습(Training) — 하이퍼파라미터 실험실 + 포즈 데모 | [session4/README.md](session4/README.md) |
 
-> session3~5는 진행에 따라 같은 구조로 순차 추가됩니다.
+> session5는 진행에 따라 같은 구조로 순차 추가됩니다.
 
 ## 공통 규칙
 
@@ -23,5 +25,7 @@ AI_COP/
 ├─ README.md          # 이 파일 (레포 인덱스)
 ├─ CONVENTIONS.md     # 모든 세션 공통 규칙 (단일 출처)
 ├─ docs/              # 기획·스펙 문서 보관
-└─ session2/          # 한 세션 = 자기완결 폴더 (README·노트북·requirements·conda 스크립트)
+├─ session2/          # 한 세션 = 자기완결 폴더 (README·노트북·requirements·conda 스크립트)
+├─ session3/
+└─ session4/
 ```
