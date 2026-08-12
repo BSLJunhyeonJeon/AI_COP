@@ -192,8 +192,12 @@
   .lrs .ticks{display:flex; gap:.4rem; margin-top:.8rem; flex-wrap:wrap;}
   .lrs .cs-tick{font-family:var(--mono); font-size:.72rem; cursor:pointer; user-select:none;
     padding:.28rem .55rem; border-radius:.35rem; border:1px solid var(--line);
-    background:var(--surface); color:var(--muted); transition:.15s;}
+    background:var(--surface); color:var(--muted); transition:.15s; line-height:1.5;}
   .lrs .cs-tick.is-on{background:var(--leaf); color:#fff; border-color:var(--leaf); font-weight:700;}
+  .lrs .cs-tick:hover{border-color:var(--leaf);}
+  /* 키보드 사용자에게 초점이 보여야 한다 (마우스 클릭 때는 나타나지 않음) */
+  .lrs .cs-tick:focus-visible, .lrs input[type=range]:focus-visible, .roadmap a:focus-visible{
+    outline:2px solid var(--leaf); outline-offset:2px;}
   .lrs .verdict{margin-top:1rem; padding-top:.9rem; border-top:1px dashed var(--line);
     font-size:.94rem; line-height:1.6; color:var(--muted); min-height:3.2rem;}
   .lrs .verdict b{color:var(--leaf);}
@@ -211,6 +215,45 @@
   .footnote{font-size:.82rem; color:var(--muted); margin-top:2.4rem; line-height:1.7;}
   .footnote b{color:var(--leaf-deep);}
   hr.sep{border:none; border-top:1px solid var(--line); margin:3.2rem 0 0;}
+
+  /* ===== 움직임 최소화 설정 존중 ===== */
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important; scroll-behavior:auto !important;}
+  }
+
+  /* ===== 인쇄 / PDF 저장 =====
+     수업 자료는 결국 인쇄되거나 PDF 로 저장된다. 화면 전용 장치(진행 바·슬라이더 컨트롤)를 걷어내고,
+     그림·콜아웃이 페이지 경계에서 잘리지 않게 한다. */
+  @media print{
+    @page{margin:14mm 12mm;}
+    :root{--bg:#fff; --surface:#fff;}
+    *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    body{font-size:10.5pt; line-height:1.55;}
+    #progress{display:none;}
+    .wrap{max-width:none; padding:0;}
+
+    /* 페이지 경계에서 쪼개지면 읽을 수 없는 덩어리들 */
+    .figure, .callout, .term, .lrs, .checks, .topic, .tbl, .figure svg{break-inside:avoid;}
+    .tbl tr{break-inside:avoid;}
+    h1, h2, .section-head, .figure .cap, .lrs .cap{break-after:avoid;}
+    section{break-before:page;}
+    .hero{padding:0 0 1rem; break-before:auto;}
+    .hero h1{font-size:2.1rem;}
+
+    /* 슬라이더는 종이에서 움직일 수 없다 -> 5장을 한꺼번에 펼쳐 보여준다 */
+    .lrs .stagebox{display:grid; grid-template-columns:repeat(2,1fr); gap:.5rem;
+      overflow:visible; min-height:0; border:none; background:none;}
+    .lrs .cs-img[src]{display:block !important; border:1px solid var(--line); border-radius:.4rem;}
+    .lrs .ctl, .lrs .ticks{display:none;}
+    .lrs .verdict{min-height:0;}
+    .lrs .verdict::after{display:block; margin-top:.5rem; color:var(--muted);
+      content:"(인쇄본에는 학습률 5종을 모두 펼쳐 두었습니다. 화면에서는 슬라이더로 하나씩 바뀝니다.)";}
+
+    /* 화면용 그림자는 인쇄에서 회색 얼룩이 된다 */
+    .figure, .term, .lrs, .checks{box-shadow:none;}
+    /* 아직 안 채워진 슬롯은 인쇄할 이유가 없다 */
+    .fs-ph, .cs-ph{display:none;}
+  }
 </style>
 </head>
 <body>
@@ -534,11 +577,11 @@
         <span class="val" id="lrValue">0.1</span>
       </div>
       <div class="ticks">
-        <span class="cs-tick is-on" data-i="0">0.1</span>
-        <span class="cs-tick" data-i="1">0.01</span>
-        <span class="cs-tick" data-i="2">0.001</span>
-        <span class="cs-tick" data-i="3">0.0001</span>
-        <span class="cs-tick" data-i="4">0.000001</span>
+        <button type="button" class="cs-tick is-on" data-i="0">0.1</button>
+        <button type="button" class="cs-tick" data-i="1">0.01</button>
+        <button type="button" class="cs-tick" data-i="2">0.001</button>
+        <button type="button" class="cs-tick" data-i="3">0.0001</button>
+        <button type="button" class="cs-tick" data-i="4">0.000001</button>
       </div>
       <div class="verdict" id="lrVerdict"></div>
     </div>
@@ -720,9 +763,12 @@
         <tr class="hi"><td><b>3</b></td><td><b>에폭 수</b> <span class="mono">epochs</span></td>
           <td>중간. 조기 종료가 있으면 덜 중요해짐</td><td class="mono">넉넉히 + early stopping</td>
           <td>라이브 실험</td></tr>
-        <tr><td>4</td><td>동결 범위 <span class="mono">freeze</span></td>
+        <tr class="hi"><td><b>4</b></td><td><b>데이터 양</b> <span class="mono">n per class</span></td>
+          <td>큼 — 단, 난이도·라벨 품질이 받쳐줄 때만</td>
+          <td class="mono">지금 가진 만큼 전부</td><td>라이브 실험</td></tr>
+        <tr><td>5</td><td>동결 범위 <span class="mono">freeze</span></td>
           <td>데이터가 아주 적을 때 큼</td><td class="mono">뒷단만 학습 → 전체 학습</td><td>표로만</td></tr>
-        <tr><td>5</td><td>배치 크기 <span class="mono">batch</span></td>
+        <tr><td>6</td><td>배치 크기 <span class="mono">batch</span></td>
           <td>주로 속도·메모리. 성능 영향은 작음</td><td class="mono">GPU가 감당하는 최대</td><td>표로만</td></tr>
       </tbody>
     </table>
@@ -764,6 +810,33 @@
         <b>“이 데이터·이 조건에서는 그렇다”는 발견</b>입니다.
         Part 1의 적혈구가 정확히 그런 경우였습니다.</div>
     </div>
+
+    <div class="prose">
+      <p>손잡이를 하나 더 돌려 봅시다. 이번에 바꾸는 건 설정이 아니라 <b>데이터의 양</b>입니다.
+        Part 1에서 열어두고 온 질문 — <b>“많으면 잘하는가”</b> — 을 이제 우리 손에 있는
+        데이터로 직접 확인할 차례입니다.</p>
+      <p>지금까지의 실험은 전부 <b>클래스당 100장, 합쳐서 300장</b>으로 돌렸습니다.
+        여기에 train 전체 <b>1,034장</b>을 넣으면 어떻게 될까요. 학습률도 에폭도 증강 여부도
+        그대로 두고 <b>사진 수만 3.4배</b>로 늘립니다.</p>
+    </div>
+
+    <div class="figure figslot">
+      <div class="cap"><span class="no">그림 10</span> 300장과 1,034장</div>
+      <img class="fs-img" data-embed="04_datasize.png" alt="학습 데이터 300장과 1,034장의 검증 정확도 곡선 비교">
+      <div class="fs-ph"><div class="pic">▥</div>
+        <div class="pt">노트북 <b>01_train_lab</b> 셀 6.5의 데이터 양 비교 그림이 들어갑니다.</div></div>
+      <div class="fnote"><b>두 곡선의 간격</b>과 <b>걸린 시간</b>을 같이 보세요.
+        노트북이 “데이터 몇 배, 시간 몇 배, 최고 검증 정확도 차이 얼마”를 숫자로 찍어 줍니다.
+        간격이 크게 벌어지든 거의 붙어 있든, <b>그게 이 데이터의 답</b>입니다.</div>
+    </div>
+
+    <div class="callout">
+      <div class="ico">✓</div>
+      <div class="body"><b>Part 1의 사건과 이어집니다.</b> 데이터를 3배 늘리는 비용은
+        촬영과 라벨링 시간으로 고스란히 돌아옵니다. 그 값을 치르기로 결정하기 전에,
+        <b>지금 가진 데이터로 손잡이부터 제대로 돌렸는지</b> 확인하는 게 순서입니다 —
+        숫자 하나(학습률)로 얼마나 갈렸는지는 이미 보셨으니까요.</div>
+    </div>
   </div>
 </section>
 
@@ -783,7 +856,7 @@
     </div>
 
     <div class="figure figslot">
-      <div class="cap"><span class="no">그림 10</span> 혼동행렬 — 어디서 헷갈리는가</div>
+      <div class="cap"><span class="no">그림 11</span> 혼동행렬 — 어디서 헷갈리는가</div>
       <img class="fs-img" data-embed="04_confusion.png" alt="세 클래스 혼동행렬">
       <div class="fs-ph"><div class="pic">▣</div>
         <div class="pt">노트북 <b>01_train_lab</b> 셀 8의 혼동행렬이 들어갑니다.</div></div>
@@ -824,7 +897,7 @@
     </div>
 
     <div class="figure figslot">
-      <div class="cap"><span class="no">그림 11</span> 시소 — 임계값을 움직이면</div>
+      <div class="cap"><span class="no">그림 12</span> 시소 — 임계값을 움직이면</div>
       <img class="fs-img" data-embed="04_tradeoff.png" alt="임계값에 따른 정밀도와 재현율의 트레이드오프 곡선">
       <div class="fs-ph"><div class="pic">◇</div>
         <div class="pt">노트북 <b>01_train_lab</b> 셀 8의 트레이드오프 곡선이 들어갑니다.</div></div>
