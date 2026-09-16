@@ -53,3 +53,23 @@ Thumbs.db
 # 없어도 셀 8이 runs.json 설정으로 30~60초 재학습하므로 수업이 멈추진 않는다(보험용).
 # 만드는 법: 코랩에서 01 완주 후  cp weights/C_aug_best.pt weights/beans_resnet18_aug_backup.pt
 !session4/weights/beans_resnet18_aug_backup.pt
+
+# ============================================================
+# 예외: 5회차 하네스 데이터 (11.6 MB) — 참가자 에이전트가 인터넷 없이 돌아야 함 (session5 스펙 §8 승인)
+# ============================================================
+# '**/data/*' 를 덮어쓰기 위해 파일 단위로 재포함한다.
+!session5/harness/data/connections.parquet
+!session5/harness/data/neurons.csv.gz
+!session5/harness/data/groups.json
+
+# ============================================================
+# 5회차 solved/ — 클로드 코드가 harness/ 복사본에서 4단계를 완료한 결과 (증거로 커밋)
+# ============================================================
+# data/ 는 harness/data 와 동일 파일이므로 중복 커밋하지 않는다(재실행하려면 harness/data 를 복사).
+# outputs/ 는 결과 그림·GIF·로그가 곧 증거이므로 이번 회차에 한해 재포함한다.
+!session5/solved/outputs/*
+
+# solved/ 안에서 커밋하지 않는 것: 클로드 코드 로컬 설정(개인 경로 포함), 이어가기용 중간 npz(3.6 MB), 캐시
+**/.claude/settings.local.json
+session5/solved/outputs/*.npz
+session5/solved/outputs/04_episodes/

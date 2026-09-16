@@ -1,0 +1,45 @@
+{
+  "stage": 2,
+  "sim_ms": 500,
+  "seed": 0,
+  "stim_rate_hz": 150.0,
+  "connections": [
+    {
+      "pre": "V",
+      "post": "G",
+      "syn": 50,
+      "sign": 1,
+      "w_mV": 13.750000000000002
+    },
+    {
+      "pre": "I",
+      "post": "G",
+      "syn": 150,
+      "sign": -1,
+      "w_mV": -41.25
+    },
+    {
+      "pre": "G",
+      "post": "J",
+      "syn": 250,
+      "sign": 1,
+      "w_mV": 68.75
+    }
+  ],
+  "spikes": {
+    "off": {
+      "V": 83,
+      "I": 0,
+      "G": 23,
+      "J": 26
+    },
+    "on": {
+      "V": 68,
+      "I": 75,
+      "G": 0,
+      "J": 0
+    }
+  },
+  "ratio_J_on_over_off": 0.0,
+  "wall_seconds": 0.382961199618876
+}

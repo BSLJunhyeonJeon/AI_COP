@@ -1,0 +1,107 @@
+{
+  "stage": 4,
+  "constants": {
+    "h": 10.0,
+    "theta_on_deg": 20.0,
+    "d_on": 28.356409098088548,
+    "speeds": [
+      0.05,
+      0.1,
+      0.25,
+      0.6,
+      2.0
+    ],
+    "K": 5,
+    "M": 3,
+    "base_speed_level": 3,
+    "t_motor_ms": 10.0,
+    "T_jump_ms": 300.0,
+    "t_appear_ms": 100.0,
+    "t_extra_ms": 50.0,
+    "stim_rate_hz": 150.0,
+    "stim_groups": [
+      "LPLC2_L",
+      "LPLC2_R"
+    ],
+    "seed_rule": "1000*k + j",
+    "d0_by_level": [
+      33.35640909808855,
+      38.35640909808855,
+      53.35640909808855,
+      88.35640909808855,
+      228.35640909808853
+    ]
+  },
+  "levels": [
+    {
+      "speed_level": 1,
+      "v": 0.05,
+      "n": 3,
+      "passed": 0,
+      "pass_rate": 0.0,
+      "fail_reasons": {
+        "too_early": 3
+      },
+      "latency_ms_mean": 6.2666666666666755
+    },
+    {
+      "speed_level": 2,
+      "v": 0.1,
+      "n": 3,
+      "passed": 3,
+      "pass_rate": 1.0,
+      "fail_reasons": {
+        "pass": 3
+      },
+      "latency_ms_mean": 6.1000000000000085
+    },
+    {
+      "speed_level": 3,
+      "v": 0.25,
+      "n": 3,
+      "passed": 3,
+      "pass_rate": 1.0,
+      "fail_reasons": {
+        "pass": 3
+      },
+      "latency_ms_mean": 6.166666666666667
+    },
+    {
+      "speed_level": 4,
+      "v": 0.6,
+      "n": 3,
+      "passed": 3,
+      "pass_rate": 1.0,
+      "fail_reasons": {
+        "pass": 3
+      },
+      "latency_ms_mean": 6.36666666666667
+    },
+    {
+      "speed_level": 5,
+      "v": 2.0,
+      "n": 3,
+      "passed": 0,
+      "pass_rate": 0.0,
+      "fail_reasons": {
+        "too_late": 3
+      },
+      "latency_ms_mean": 6.433333333333342
+    }
+  ],
+  "base_speed_level": 3,
+  "base_pass_rate": 1.0,
+  "max_speed_fail_count": 3,
+  "gif": {
+    "episodes": [
+      "k3_j1",
+      "k5_j1"
+    ],
+    "n_frames": 44,
+    "fps": 10,
+    "frame_ms": 10.0
+  },
+  "sim_ms_total": 5326.670387142607,
+  "wall_seconds_episodes_total": 110.91247680224478,
+  "wall_seconds": 5.002832500264049
+}

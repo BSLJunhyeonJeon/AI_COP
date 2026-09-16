@@ -1,0 +1,34 @@
+{
+  "stage": 3,
+  "sim_ms": 1000,
+  "seed": 0,
+  "stim_groups": [
+    "LPLC2_L",
+    "LPLC2_R"
+  ],
+  "stim_rate_hz": 150,
+  "n_stim_neurons": 210,
+  "gf": {
+    "GF_L": {
+      "stim_hz": 255.0,
+      "ctrl_hz": 0.0
+    },
+    "GF_R": {
+      "stim_hz": 336.0,
+      "ctrl_hz": 0.0
+    }
+  },
+  "gf_first_spike_ms": 6.0,
+  "n_active_stim": 1462,
+  "n_active_ctrl": 0,
+  "n_spikes_stim": 89270,
+  "n_spikes_ctrl": 0,
+  "lplc2_mean_rate_hz": 149.82380952380953,
+  "n_neurons": 138639,
+  "n_connections": 2700513,
+  "sim_wall_seconds": {
+    "stim": 26.239246800541878,
+    "ctrl": 20.658913100138307
+  },
+  "wall_seconds": 48.07062890008092
+}

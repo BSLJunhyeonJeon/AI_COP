@@ -10,8 +10,9 @@
 | **session2** | 분류·감지·분할 개념 체험 + 데이터 형식·증강 | [session2/README.md](session2/README.md) |
 | **session3** | 전이학습(파인튜닝) — YOLO11n 을 혈액 데이터로 | [session3/README.md](session3/README.md) |
 | **session4** | 학습(Training) — 하이퍼파라미터 실험실 + 포즈 데모 | [session4/README.md](session4/README.md) |
+| **session5** | 프로젝트 루트(하네스) 구축 — 에이전트에게 초파리 전뇌 시뮬레이션·공룡 게임 만들게 하기 | [session5/README.md](session5/README.md) |
 
-> session5는 진행에 따라 같은 구조로 순차 추가됩니다.
+> session5 는 예외 회차입니다 — 참가자용 노트북 대신 에이전트용 프로젝트 루트(`session5/harness/`)를 제공합니다. 예외 근거는 [docs/session5_spec_agent_harness.md](docs/session5_spec_agent_harness.md) §8.
 
 ## 공통 규칙
 
@@ -27,5 +28,6 @@ AI_COP/
 ├─ docs/              # 기획·스펙 문서 보관
 ├─ session2/          # 한 세션 = 자기완결 폴더 (README·노트북·requirements·conda 스크립트)
 ├─ session3/
-└─ session4/
+├─ session4/
+└─ session5/          # 예외: 노트북 없음. harness/(원본 하네스) + solved/(클로드 코드 완료본)
 ```

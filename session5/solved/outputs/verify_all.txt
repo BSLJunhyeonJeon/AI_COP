@@ -1,0 +1,102 @@
+===== 단계 1 =====
+[PASS] 주 스크립트 존재: src/step1_neuron.py
+[PASS] 파일 존재: outputs/01_trace.png
+[PASS] 01_trace.png 크기 ≥ 400×300 (실제 900×700)
+[PASS] 01_trace.png 이 빈 그림이 아니다 (배경 아닌 픽셀 6.5 % ≥ 0.5 %)
+[PASS] 파일 존재: outputs/01_fi_curve.csv
+[PASS] 01_fi_curve.csv 컬럼 확인
+[PASS] 파일 존재: outputs/01_summary.json
+[PASS] 01_summary.json 이 JSON 객체다
+[PASS] I_ext 목록 = [0, 5, 7, 8, 10, 15, 20, 30] (실제 [0.0, 5.0, 7.0, 8.0, 10.0, 15.0, 20.0, 30.0])
+[PASS] I_ext ≤ 7 mV 에서 발화율 0 (실제 [0.0, 0.0, 0.0])
+[PASS] 발화율이 I_ext 에 대해 단조 비감소
+[PASS] 모든 발화율 < 454.5 Hz (최대 131.0)
+[PASS] I_ext ≥ 10 mV 에서 해석해와 ±5% 이내 — I=10: 38.0 vs 38.1 (+0.1%), I=15: 67.0 vs 67.7 (+1.0%), I=20: 91.0 vs 92.5 (+1.6%), I=30: 131.0 vs 133.1 (+1.6%)
+[PASS] 01_summary.json: stage == 1
+[PASS] 01_summary.json: wall_seconds 기록됨 (1.4247643006965518)
+[PASS] dt_ms == 0.1 (실제 0.1)
+[PASS] sim_ms == 1000 (실제 1000)
+[PASS] summary 의 I_ext_mV 목록 일치
+[PASS] summary 의 rate_hz 길이 8
+===== 단계 2 =====
+[PASS] 주 스크립트 존재: src/step2_reflex.py
+[PASS] 파일 존재: outputs/02_reflex.png
+[PASS] 02_reflex.png 크기 ≥ 400×300 (실제 1000×600)
+[PASS] 02_reflex.png 이 빈 그림이 아니다 (배경 아닌 픽셀 6.7 % ≥ 0.5 %)
+[PASS] 파일 존재: outputs/02_summary.json
+[PASS] 02_summary.json 이 JSON 객체다
+[PASS] 02_summary.json: stage == 2
+[PASS] 02_summary.json: wall_seconds 기록됨 (0.382961199618876)
+[PASS] sim_ms == 500 (실제 500)
+[PASS] spikes.off / spikes.on 에 V, I, G, J 가 모두 있다
+[PASS] 두 조건 모두 V 가 자극됨 (off V=83, on V=68)
+[PASS] 억제 꺼짐 조건에서 I 스파이크 0 (실제 0)
+[PASS] 억제 켜짐 조건에서 I 가 자극됨 (실제 75)
+[PASS] 억제 꺼짐: J 스파이크 ≥ 1 (실제 26)
+[PASS] 억제 켜짐: J(on)/J(off) = 0/26 = 0.000 ≤ 0.2
+[PASS] ratio_J_on_over_off 값이 spikes 와 일치 (기록 0.0)
+===== 단계 3 =====
+[PASS] 주 스크립트 존재: src/step3_brain.py
+[PASS] 파일 존재: outputs/03_raster.png
+[PASS] 03_raster.png 크기 ≥ 400×300 (실제 1200×800)
+[PASS] 03_raster.png 이 빈 그림이 아니다 (배경 아닌 픽셀 21.6 % ≥ 0.5 %)
+[PASS] 파일 존재: outputs/03_rates.csv
+[PASS] 03_rates.csv 컬럼 확인
+[PASS] 파일 존재: outputs/03_summary.json
+[PASS] 03_summary.json 이 JSON 객체다
+[PASS] 03_summary.json: stage == 3
+[PASS] 03_summary.json: wall_seconds 기록됨 (48.07062890008092)
+[PASS] sim_ms == 1000 (실제 1000)
+[PASS] stim_groups == ['LPLC2_L', 'LPLC2_R'] (실제 ['LPLC2_L', 'LPLC2_R'])
+[PASS] stim_rate_hz == 150 (실제 150)
+[PASS] GF_L 자극 시 발화율 ≥ 50 Hz (실제 255.0)
+[PASS] GF_L 무자극 시 발화율 == 0 (실제 0.0)
+[PASS] GF_R 자극 시 발화율 ≥ 50 Hz (실제 336.0)
+[PASS] GF_R 무자극 시 발화율 == 0 (실제 0.0)
+[PASS] 무자극 시 발화 뉴런 수 == 0 (실제 0)
+[PASS] 자극 시 발화 뉴런 수 ≥ 200 (실제 1462)
+[PASS] n_neurons == 138639 (실제 138639)
+[PASS] n_connections == 2700513 (실제 2700513)
+[PASS] groups.json 의 뉴런 538개가 모두 03_rates.csv 에 있다 (누락 0)
+[PASS] 03_rates.csv 의 index 중복 없음
+[PASS] 03_rates.csv 의 rate_ctrl_hz 가 전부 0
+[PASS] csv 에서 rate_stim_hz > 0 인 행 수(1462) == summary 의 n_active_stim(1462)
+[PASS] csv 의 GF_L(index 57246) rate_stim_hz ≥ 50 (실제 255.0)
+[PASS] csv 의 GF_R(index 108748) rate_stim_hz ≥ 50 (실제 336.0)
+[PASS] LPLC2 자극 뉴런(210/210개)의 평균 발화율이 150 Hz 근처 (149.8 Hz, 허용 (100.0, 200.0))
+===== 단계 4 =====
+[PASS] 주 스크립트 존재: src/step4_dino.py
+[PASS] 파일 존재: outputs/04_speed_vs_pass.png
+[PASS] 04_speed_vs_pass.png 크기 ≥ 400×300 (실제 700×450)
+[PASS] 04_speed_vs_pass.png 이 빈 그림이 아니다 (배경 아닌 픽셀 6.0 % ≥ 0.5 %)
+[PASS] 파일 존재: outputs/04_dino.gif
+[PASS] 04_dino.gif 프레임 수 ≥ 30 (실제 44)
+[PASS] 04_dino.gif 프레임 크기 ≥ 640×360 (실제 800×450)
+[PASS] 04_dino.gif 프레임이 비어 있지 않다 (배경 아닌 픽셀 최소 3.9 %)
+[PASS] 04_dino.gif 장면이 움직인다 (프레임 간 달라진 픽셀 최대 4.04 %)
+[PASS] 파일 존재: outputs/04_log.csv
+[PASS] 04_log.csv 컬럼 확인
+[PASS] 파일 존재: outputs/04_summary.json
+[PASS] 04_summary.json 이 JSON 객체다
+[PASS] 에피소드 수 == 15 (실제 15)
+[PASS] 속도 단계 1..5 각각 3개 (실제 {1: 3, 2: 3, 3: 3, 4: 3, 5: 3})
+[PASS] 단계별 속도 == [0.05, 0.1, 0.25, 0.6, 2.0]
+[PASS] d0 == d_on + 100 ms × v (d_on = 28.36)
+[PASS] t_collision_ms == d0 / v
+[PASS] t_theta_on_ms ≈ 100 ms (실제 100.0~100.0)
+[PASS] jumped / passed 가 0 또는 1
+[PASS] fail_reason 값이 ['', 'no_jump', 'too_early', 'too_late'] 안 (실제 ['', 'too_early', 'too_late'])
+[PASS] passed == 1 인 행만 fail_reason 이 빈칸
+[PASS] latency_ms 기록 15개, 모두 > 0 (범위 5.8~7.0 ms)
+[PASS] jumped == 1 인 행에만 latency_ms 가 있다
+[PASS] 기본 속도(k=3) 통과율 1.00 ≥ 0.8
+[PASS] 최고 속도(k=5) 실패 3개 ≥ 1
+[PASS] 04_summary.json: stage == 4
+[PASS] 04_summary.json: wall_seconds 기록됨 (5.002832500264049)
+[PASS] constants 기록됨
+[PASS] summary.levels 가 04_log.csv 와 일치(n, passed, pass_rate)
+[PASS] base_speed_level == 3
+[PASS] base_pass_rate == 1.00
+[PASS] max_speed_fail_count == 3
+
+전체: PASS
