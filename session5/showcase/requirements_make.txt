@@ -1,0 +1,8 @@
+# 데이터 팩·영상 재생성(make_pack.py, shorts_render.py, viz_episode.py)에 필요한 것 — 강사용
+numpy>=2.0
+scipy>=1.13
+pandas>=2.2
+pyarrow>=16.0
+matplotlib>=3.9
+Pillow>=10.4
+mujoco>=3.2

@@ -73,3 +73,10 @@ Thumbs.db
 **/.claude/settings.local.json
 session5/solved/outputs/*.npz
 session5/solved/outputs/04_episodes/
+
+# ============================================================
+# 5회차 showcase — PyInstaller 빌드 산출물은 커밋하지 않는다 (build_exe.bat 으로 재생성)
+# ============================================================
+session5/showcase/build/
+session5/showcase/dist/
+session5/showcase/*.spec
