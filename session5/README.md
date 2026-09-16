@@ -9,16 +9,21 @@
 
 ---
 
-## 폴더 두 개
+## 폴더 구성
 
 ```
 session5/
-├─ harness/   # ★ 원본 하네스. 참가자는 이 폴더를 복사해서 씁니다
-└─ solved/    # harness/ 를 복사해 클로드 코드가 4단계를 완료한 결과 (수업 후 참고용)
+├─ session5_lecture.html   # 강의 자료 (단독 열람용 한 파일, 영상·그림 포함 7 MB)
+├─ harness/                # ★ 원본 하네스. 참가자는 이 폴더를 복사해서 씁니다
+├─ solved/                 # harness/ 를 복사해 클로드 코드가 4단계를 완료한 결과 (수업 후 참고용)
+├─ showcase/               # 강사용 시연 — 쇼츠 영상, 동기화 GIF, 수업용 재생기(FlyBrainPlayer.exe 빌드)
+└─ tools/                  # 강사용 — harness/data 재생성 스크립트
 ```
 
+- `session5_lecture.html` — 수업 흐름 그대로의 강의 자료입니다. 브라우저로 열면 됩니다(Chrome/Edge 권장 — 오프닝 영상 재생).
 - `harness/` — 데이터·규칙(AGENTS.md)·과제(docs/TASK.md)·수식(docs/MODEL_SPEC.md)·검증기(tests/verify.py)만 있고 코드는 없습니다. 사용법은 [harness/README.md](harness/README.md).
 - `solved/` — 같은 폴더를 클로드 코드에게 주고 자동 지시 한 문장으로 완주시킨 결과입니다. `src/` 의 코드, `outputs/` 의 그림·GIF·로그, `RUN_LOG.md`(모델·소요 시간·막힌 곳)가 그대로 들어 있습니다. 수업 중에는 열지 마세요 — 에이전트가 베낍니다.
+- `showcase/` — 강사용입니다. 재생기 사용법과 영상 재생성 절차는 [showcase/README.md](showcase/README.md).
 
 ## 참가자 순서 (수업 중)
 
@@ -29,7 +34,7 @@ session5/
 
 ## 이 폴더를 내 연구로 옮기려면
 
-`harness/` 의 다섯 요소 — 폴더 구조, 규칙(AGENTS.md), 과제(TASK.md), 데이터(data/), 검증(tests/) — 를 내 연구 폴더에 같은 이름으로 만들면 됩니다. 절차와 빈 템플릿은 강의 자료 `session5_lecture.html` 에 있습니다(준비 중).
+`harness/` 의 다섯 요소 — 폴더 구조, 규칙(AGENTS.md), 과제(TASK.md), 데이터(data/), 검증(tests/) — 를 내 연구 폴더에 같은 이름으로 만들면 됩니다. 절차와 빈 템플릿은 강의 자료 [session5_lecture.html](session5_lecture.html) 의 Part 7 에 있습니다.
 
 ## 데이터 출처
 
