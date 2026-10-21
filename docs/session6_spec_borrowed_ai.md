@@ -33,7 +33,8 @@ session6/
    └─ fusion/              # Fusion 시연 결과 — STL(소용량) + 스크린샷. 녹화 영상은 커밋하지 않는다
 ```
 
-- 시연용 이미지·영상은 레포에 넣지 않는다(규칙 2). 출처 링크와 라이선스를 `CATALOG.md` 에 적는다.
+- **수업 당일 판(§13-1)**: `CATALOG.md`·`MCP_GUIDE.md` 는 강의 HTML 에 합쳐서 만들지 않는다. 실제로 만드는 것은 `README.md`, `session6_lecture.html`, `tools/`(검증 예시 재현 스크립트)다.
+- 시연용 이미지·영상은 레포에 넣지 않는다(규칙 2). 출처 링크와 라이선스를 강의 HTML 에 적는다.
 - 노트북을 만들기로 하면(§13-2) `notebooks/01_zero_shot_check.ipynb` 하나를 추가하고, 그때는 `requirements.txt`·conda 스크립트도 둔다.
 
 ---
@@ -224,12 +225,12 @@ session6/
 
 ## 10. 회차 통과 조건
 
-- [ ] Part 2 도구가 리허설에서 모두 실제 결과를 냈고 캡처가 있다. Dice/F1 수치가 1개 이상 있다.
-- [ ] Part 3 시나리오 1~5 를 모두 실행했고, 무료 계정에서 PubMed 커넥터가 동작함을 확인했다.
-- [ ] Fusion 시연: STL 생성 → clearance 수정 → 재출력 성공, 녹화 백업 있음.
-- [ ] `CATALOG.md` 모든 항목에 무료 경로·라이선스·확인일·확인 상태가 있다. 유료 항목은 유료라고 적었다.
-- [ ] §11 재확인을 수업 1주 전 이내에 마쳤다.
-- [ ] 레포에 시연 데이터·녹화 영상이 없다.
+- [~] Part 2 도구가 리허설에서 실제 결과를 냈다 — Cellpose·InstanSeg·Fiji·NP-SAM 은 결과와 그림, F1/Dice 수치 있음(§14-1). QuPath GUI·SAM 3 로컬·Tierpsy 는 못 함.
+- [~] Part 3 — PubMed MCP 검색은 서버 직접 호출로 확인. 무료 계정의 커넥터 켜기와 시나리오 ②~⑤ 의 채팅 실행은 수업 전 준현 확인 필요.
+- [ ] Fusion 시연: STL 생성 → clearance 수정 → 재출력 성공, 녹화 백업 있음. (준현 — 포트 27183)
+- [x] 강의 HTML 의 모든 도구 항목에 무료 경로·라이선스·확인일·확인 상태가 있다(CATALOG.md 대신, §13-1). 링크 39개 접속 확인(Autodesk 블로그만 자동 요청 차단으로 403 — 조사 에이전트가 우회 경로로 본문을 읽음).
+- [x] §11 재확인 — 2026-10-22 당일 조사.
+- [x] 레포에 시연 데이터·녹화 영상이 없다(`data/`·`outputs/` 는 gitignore).
 
 ---
 
@@ -255,17 +256,27 @@ session6/
 
 ---
 
-## 13. 열린 결정
+## 13. 결정 사항 (2026-10-22 준현 확정)
 
-1. 수업 날짜.
-2. 노트북 여부 — 기본안: 없음(Dice/F1 은 강사가 리허설에서 계산해 강의 자료에 넣는다). 대안: 코랩 노트북 1개(Cellpose zero-shot + 정답 마스크 Dice).
-3. 참가자 직접 실습 범위 — 기본안: PubMed 커넥터 1개만. 대안: 전부 강사 시연.
-4. Fusion 시연 라이선스 — 30일 체험판 vs 기존 구독.
-5. Team plan for scientists 신청 안내 여부(PI 가 신청해야 함).
-6. 시연 샘플 데이터(§9-2).
-7. 4회차 "한 줄 정리" 발췌 문장 확정.
+1. 수업 날짜 — **2026-10-22 10:00.** 남은 시간이 짧아 §9 작업 순서를 줄인다: `CATALOG.md`·`MCP_GUIDE.md` 는 따로 만들지 않고 강의 HTML 의 표와 "따라 해 보기" 상자로 합친다. 리허설은 강사 랩탑(이 PC, RTX 5050 Laptop 8 GB)에서 가능한 범위만 한다.
+2. 노트북 — 참가자 전원과 강사가 **랩탑을 가져온다.** 주피터 노트북은 만들지 않는다(기본안). Dice/F1 예시는 강사 랩탑에서 계산해 강의 자료에 넣는다.
+3. 직접 실습 범위 — 시간상 **강사 설명 위주로 끝날 수 있다.** 대신 모든 실습 절차를 강의 HTML 의 "따라 해 보기" 상자에 넣어 모임 이후 혼자 해 볼 수 있게 한다.
+4. Fusion — 강사는 **아카데믹 라이선스**로 그대로 시연한다. 주의: 강사 랩탑에서는 Fusion MCP 기본 포트 27182 를 MATLAB 서비스(MathWorksServiceHost)가 이미 쓰고 있다(2026-10-22 01:55 확인). Fusion 환경설정 > General > API 의 Fusion MCP Server Port 를 비어 있는 27183 으로 바꾸고, Claude 데스크톱 > Customize > Connectors > Autodesk Fusion > Configure 의 포트도 같게 맞춘 뒤 Claude 를 완전히 재시작한다(Autodesk 블로그 2026-06-29 의 설정 절차 기준, 충돌 해결법 자체는 공식 문서에 없음).
+5. Team plan for scientists — 강의 HTML Part 5 에 설명으로 넣는다.
+6. 시연 샘플 데이터 — 공개 데이터셋을 쓴다.
+7. 4회차 "한 줄 정리" — 넣지 않는다. Part 1 표는 회차별 "가져간 것" 으로 정리한다.
 
 ---
+
+## 14-1. 실행 기록 (2026-10-22 02:00~04:00, 강사 랩탑, Claude Code 가 준현 요청으로 무인 진행)
+
+- 환경: Windows 11, RTX 5050 Laptop 8 GB. conda env `ai_cop_session6`(Py 3.11.17, torch 2.11.0+cu128, cellpose[gui] 4.2.1.1, instanseg-torch 0.1.2), `ai_cop_npsam`(Py 3.10.22, npsam 3.2.3, torch cu128), `ai_cop_napari`(napari 0.9.2, napari-mcp 0.1.0). Fiji 2.16 은 `C:\Users\BSL\AI_COP_tools\Fiji.app`.
+- Part 2 메시지 1 (`tools/zero_shot_check.py`): NuInsSeg 사람 흑색종·편도·비장 58장, 정답 정리 후 핵 4,990개. Cellpose cpsam_v2 기본 P 0.83 / R 0.65 / F1 0.73 / Dice 0.87, 이미지당 < 1 s. 면적 사분위별 재현율(가장자리 제외) 0.13 / 0.61 / 0.88 / 0.92 — 작은 핵을 놓친다. cellprob −3 은 F1 0.59 로 악화, diameter 20 은 0.72 로 변화 없음. InstanSeg brightfield_nuclei: 픽셀 크기 미지정 0.52, 0.25 µm 지정 0.73. 정답 라벨에 흩어진 조각(약 900개 핵)·30 px 미만 찌꺼기(256개)가 있어 정리함(정리 전 F1 0.70).
+- Part 2 메시지 3 (`tools/sem_check.py`, `tools/npsam_run.py`): BAM TiO2 1908248(정답 143개) — Fiji 기본 방식 F1 0.42, NP-SAM FastSAM 0.58, NP-SAM SAM ViT-H 0.46. NFFA 이미지(작고 틈이 있는 입자)에서는 눈으로 보아 Fiji 가 더 깔끔. → 메시지 3 서술을 "이미지가 정한다, 고전 방식 먼저" 로 확정. 겹침 규칙(number_of_overlapping_masks ≤ 1) 일괄 적용은 두 모델 모두 악화(0.31, 0.40).
+- 발견한 함정(강의 자료 부록 점검표에 반영): `cellpose` 만 설치하면 GUI 없음 → `cellpose[gui]`; Fiji `--headless` 에서 Analyze Particles NPE → `-batch`; Fiji Black background; NP-SAM 설치 시 cp949 → `PYTHONUTF8=1`; NP-SAM 가중치 OSF 다운로드 DNS 실패 → 공식 출처(FastSAM-x, Meta SAM ViT-H); NP-SAM 은 GPU 없으면 FastSAM(AGPL) 자동 선택; napari-mcp 는 `napari[all]` 필요.
+- MCP: PubMed 원격 서버 도구 7개 확인 + 검색 1회(18편), bioRxiv 응답 확인, napari-mcp stdio 서버 도구 16개 확인(Claude 데스크톱 등록은 하지 않음 — 준현이 수업 전에).
+- 하지 못한 것: QuPath GUI, SAM 3 로컬(가중치 승인제), Tierpsy(Docker 없음), Zotero MCP(Zotero 없음), Fusion 시연 리허설(준현 몫), 참가자 무료 계정에서 커넥터 켜기.
+- 계획 변경: 작업이 늘어난 대신 `CATALOG.md`·`MCP_GUIDE.md` 는 만들지 않고 HTML 로 통합(§13-1). 그림을 넣는 빌더(`tools/build_html.py`)와 템플릿을 3회차 방식으로 분리.
 
 ## 14. 근거 (조사 2026-10-22)
 

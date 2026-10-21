@@ -1,0 +1,23 @@
+# session6 — 강의 자료의 검증 예시(tools/zero_shot_check.py, tools/sem_check.py) 재현용
+# 강사 노트북(Windows 11, Python 3.11.17, RTX 5050 Laptop)에서 2026-10-22 실제 설치·실행한 버전.
+#
+# GPU(CUDA 12.8) torch 는 PyPI 기본판이 아니라 PyTorch 저장소에서 먼저 설치한다:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+# GPU 가 없으면 위 줄 대신 그냥 아래를 설치해도 된다(느리지만 동작).
+#
+# NP-SAM 은 의존성 버전을 많이 고정하므로 이 파일에 넣지 않는다 — 별도 환경(Python 3.10)에서
+#   set PYTHONUTF8=1 && pip install npsam==3.2.3      (tools/npsam_run.py 머리말 참고)
+torch==2.11.0
+torchvision==0.26.0
+cellpose[gui]==4.2.1.1
+instanseg-torch==0.1.2
+einops==0.8.2
+roifile==2026.2.10
+scikit-image==0.26.0
+scipy==1.17.1
+tifffile==2026.3.3
+imageio==2.38.1
+matplotlib==3.11.2
+numpy==2.4.6
+pillow==12.3.0
+requests==2.34.2
