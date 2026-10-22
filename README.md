@@ -5,13 +5,15 @@
 
 ## 세션 목록
 
-| 세션 | 주제 | 바로가기 |
-|---|---|---|
-| **session2** | 분류·감지·분할 개념 체험 + 데이터 형식·증강 | [session2/README.md](session2/README.md) |
-| **session3** | 전이학습(파인튜닝) — YOLO11n 을 혈액 데이터로 | [session3/README.md](session3/README.md) |
-| **session4** | 학습(Training) — 하이퍼파라미터 실험실 + 포즈 데모 | [session4/README.md](session4/README.md) |
-| **session5** | 프로젝트 루트(하네스) 구축 — 에이전트에게 초파리 전뇌 시뮬레이션·공룡 게임 만들게 하기 | [session5/README.md](session5/README.md) |
-| **session6** | 마무리 — 지난 회차 요약 + 빌려 쓰는 AI(학습 없이 쓰는 모델 · MCP · Fusion 360) | [session6/README.md](session6/README.md) |
+| 세션 | 주제 | 강의 자료 (클릭하면 바로 열림) | 실습 안내 |
+|---|---|---|---|
+| **session2** | 분류·감지·분할 개념 체험 + 데이터 형식·증강 | [2회차 강의 자료](https://bsljunhyeonjeon.github.io/AI_COP/session2/session2_lecture.html) | [session2/README.md](session2/README.md) |
+| **session3** | 전이학습(파인튜닝) — YOLO11n 을 혈액 데이터로 | [3회차 강의 자료](https://bsljunhyeonjeon.github.io/AI_COP/session3/session3_lecture.html) | [session3/README.md](session3/README.md) |
+| **session4** | 학습(Training) — 하이퍼파라미터 실험실 + 포즈 데모 | [4회차 강의 자료](https://bsljunhyeonjeon.github.io/AI_COP/session4/session4_lecture.html) | [session4/README.md](session4/README.md) |
+| **session5** | 프로젝트 루트(하네스) 구축 — 에이전트에게 초파리 전뇌 시뮬레이션·공룡 게임 만들게 하기 | [5회차 강의 자료](https://bsljunhyeonjeon.github.io/AI_COP/session5/session5_lecture.html) | [session5/README.md](session5/README.md) |
+| **session6** | 마무리 — 지난 회차 요약 + 빌려 쓰는 AI(학습 없이 쓰는 모델 · MCP · Fusion 360) | [6회차 강의 자료](https://bsljunhyeonjeon.github.io/AI_COP/session6/session6_lecture.html) | [session6/README.md](session6/README.md) |
+
+> **강의 자료 링크**는 GitHub Pages 로 열립니다 — 설치나 다운로드 없이 브라우저에서 바로 볼 수 있습니다. 내 컴퓨터에 저장해 두려면 열린 페이지에서 `Ctrl + S` 를 누르세요(그림이 모두 들어 있는 한 파일이라 인터넷 없이도 열립니다).
 
 > session5 는 예외 회차입니다 — 참가자용 노트북 대신 에이전트용 프로젝트 루트(`session5/harness/`)를 제공합니다. 예외 근거는 [docs/session5_spec_agent_harness.md](docs/session5_spec_agent_harness.md) §8.
 > session6 도 참가자용 노트북이 없습니다 — 강의 자료(`session6/session6_lecture.html`)의 “따라 해 보기” 절차와, 검증 예시를 재현하는 `session6/tools/` 를 제공합니다. 근거는 [docs/session6_spec_borrowed_ai.md](docs/session6_spec_borrowed_ai.md) §8·§13.
