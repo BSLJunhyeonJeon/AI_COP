@@ -11,6 +11,7 @@
   python tools/sem_check.py --fiji "C:/.../fiji-windows-x64.exe"   # Fiji 를 헤드리스로 돌려 라벨 이미지 생성
   (NP-SAM 은 별도 환경에서) python tools/npsam_run.py --model fast / --model huge
   python tools/sem_check.py --score                      # 채점 + 그림
+  python tools/sem_check.py --fiji-steps "C:/.../ImageJ-win64.exe"  # Fiji 단계별 그림 (NFFA, 그림 4)
 """
 import argparse
 import json
@@ -121,6 +122,119 @@ def run_fiji(fiji_exe):
             print(r.stdout[-1500:], r.stderr[-1500:])
 
 
+NFFA_SCALE_PX = 60          # NFFA 이미지의 200 nm 스케일바: 양 끝 눈금 중심 x=11.5 → 71.5 (2026-10-22 측정)
+NFFA_SCALE_NM = 200
+
+FIJI_STEPS_MACRO = r'''
+// 강의 자료 그림 4 — Fiji 기본 방식을 메뉴 순서대로 실행하며 단계마다 이미지를 저장 (배치 모드)
+args = split(getArgument(), "|");
+src = args[0]; out = args[1]; barRow = parseInt(args[2]); px = args[3]; nm = args[4];
+setBatchMode(true);
+open(src);                                                        // File > Open
+saveAs("PNG", out + "/step1_open.png");
+makeRectangle(0, 0, getWidth(), barRow); run("Crop");             // 사각형 선택 → Image > Crop
+saveAs("PNG", out + "/step2_crop.png");
+run("Set Scale...", "distance=" + px + " known=" + nm + " unit=nm");   // Analyze > Set Scale...
+id = getImageID();
+run("Duplicate...", "title=scalebar_preview");
+run("Scale Bar...", "width=500 height=6 font=28 color=White background=Black location=[Lower Right] bold");
+saveAs("PNG", out + "/step3_scale.png"); close();
+selectImage(id);
+run("8-bit");                                                     // Image > Type > 8-bit
+setOption("BlackBackground", true);                               // Process > Binary > Options... > Black background
+setAutoThreshold("Default dark");                                 // Image > Adjust > Threshold... (Default, Dark background)
+getThreshold(lo, hi);
+File.saveString("" + lo + "," + hi, out + "/step4_threshold.txt");
+run("Convert to Mask");                                           // Threshold 창의 Apply
+saveAs("PNG", out + "/step5_mask.png");
+run("Watershed");                                                 // Process > Binary > Watershed
+saveAs("PNG", out + "/step6_watershed.png");
+title = getTitle();
+run("Set Measurements...", "area feret's redirect=None decimal=3");     // Analyze > Set Measurements...
+run("Analyze Particles...", "size=20-Infinity pixel show=[Count Masks] display clear");  // Analyze > Analyze Particles... (배치 모드에선 Summarize 를 켜면 입자별 표가 요약으로 바뀌어 끈다)
+saveAs("Results", out + "/step7_results.csv");                   // 입자별 표 (Area, Feret ...)
+selectImage("Count Masks of " + title);
+saveAs("Tiff", out + "/step7_countmask.tif");
+'''
+
+
+def run_fiji_steps(fiji_exe):
+    """NFFA (CC BY) 이미지로 Fiji 단계별 중간 이미지를 outputs/fiji_steps/ 에 저장한다."""
+    steps = OUT / "fiji_steps"
+    steps.mkdir(parents=True, exist_ok=True)
+    src = DATA / "nffa" / NFFA_PICK
+    bar = bar_row(load_gray(src))
+    macro = steps / "fiji_steps.ijm"
+    macro.write_text(FIJI_STEPS_MACRO, encoding="utf-8")
+    arg = f"{src.as_posix()}|{steps.as_posix()}|{bar}|{NFFA_SCALE_PX}|{NFFA_SCALE_NM}"
+    r = subprocess.run([fiji_exe, "--console", "-batch", str(macro), arg], capture_output=True, text=True, timeout=600)
+    made = sorted(p.name for p in steps.glob("step*"))
+    print("Fiji 종료코드", r.returncode, "| 만든 파일:", made)
+    if not (steps / "step7_countmask.tif").exists():
+        print(r.stdout[-1500:], r.stderr[-1500:])
+
+
+def steps_figure():
+    """fiji_steps/ 의 중간 결과 → 강의 자료용 단계 그림 7장 (outputs/fiji_step*.jpg)."""
+    import csv
+    from PIL import Image
+    from skimage.io import imread
+    from skimage.segmentation import find_boundaries
+    from skimage.morphology import dilation, disk
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    st = OUT / "fiji_steps"
+    W = 640
+
+    def save(arr, name, width=W):
+        im = Image.fromarray(np.asarray(arr).astype(np.uint8))
+        h = round(im.height * width / im.width)
+        im.resize((width, h), Image.LANCZOS).save(OUT / name, quality=88)
+
+    orig = load_gray(st / "step1_open.png")
+    save(orig, "fiji_step1.jpg")
+    crop = load_gray(st / "step2_crop.png")
+    save(crop, "fiji_step2.jpg")
+    save(load_gray(st / "step3_scale.png"), "fiji_step3.jpg")
+    lo, hi = [float(x) for x in (st / "step4_threshold.txt").read_text().split(",")]
+    sel = (crop >= lo) & (crop <= hi)
+    rgb = np.stack([crop] * 3, -1).astype(np.uint8)
+    rgb[sel] = (255, 0, 0)                                         # Threshold 창이 보여 주는 빨간 미리보기와 같은 표시
+    save(rgb, "fiji_step4.jpg")
+    mask = load_gray(st / "step5_mask.png")
+    ws = load_gray(st / "step6_watershed.png")
+    # watershed 효과가 보이도록 빽빽한 구역을 2배 확대해 [이진화 | watershed] 나란히
+    y0, x0, hh, ww = 150, 330, 160, 220
+    a = Image.fromarray(mask[y0:y0 + hh, x0:x0 + ww]).resize((ww * 2, hh * 2), Image.NEAREST)
+    b = Image.fromarray(ws[y0:y0 + hh, x0:x0 + ww]).resize((ww * 2, hh * 2), Image.NEAREST)
+    pair = Image.new("L", (ww * 4 + 12, hh * 2), 255)
+    pair.paste(a, (0, 0)); pair.paste(b, (ww * 2 + 12, 0))
+    save(np.array(pair), "fiji_step5.jpg")
+    lab = relabel(imread(st / "step7_countmask.tif"))
+    rng = np.random.default_rng(0)
+    colors = rng.integers(60, 256, size=(lab.max() + 1, 3)); colors[0] = 0
+    over = np.stack([crop] * 3, -1).astype(float)
+    fill = lab > 0
+    over[fill] = 0.55 * over[fill] + 0.45 * colors[lab[fill]]
+    over[dilation(find_boundaries(lab, mode="inner"), disk(0))] = (255, 255, 0)
+    save(over, "fiji_step6.jpg")
+    with open(st / "step7_results.csv", encoding="utf-8") as fh:
+        rows = list(csv.DictReader(fh))
+    feret = np.array([float(r["Feret"]) for r in rows])
+    fig, ax = plt.subplots(figsize=(6.4, 3.6), dpi=100)
+    ax.hist(feret, bins=30, color="#1F4E5F")
+    ax.set_xlabel("Feret diameter (nm)"); ax.set_ylabel("particles")
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout(); fig.savefig(OUT / "fiji_step7.png"); plt.close(fig)
+    Image.open(OUT / "fiji_step7.png").convert("RGB").save(OUT / "fiji_step7.jpg", quality=90)
+    info = {"particles": int(lab.max()), "results_rows": len(rows), "feret_median_nm": round(float(np.median(feret)), 1),
+            "feret_p10_p90_nm": [round(float(np.percentile(feret, 10)), 1), round(float(np.percentile(feret, 90)), 1)],
+            "threshold": [lo, hi], "crop_height": int(crop.shape[0]), "nm_per_px": NFFA_SCALE_NM / NFFA_SCALE_PX}
+    (OUT / "fiji_steps_summary.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
+    print(info)
+
+
 def relabel(m):
     from skimage.segmentation import relabel_sequential
     return relabel_sequential(np.asarray(m).astype(np.int64))[0]
@@ -194,6 +308,7 @@ if __name__ == "__main__":
     ap.add_argument("--fetch", action="store_true")
     ap.add_argument("--fiji", default=None, help="Fiji 실행 파일 경로")
     ap.add_argument("--score", action="store_true")
+    ap.add_argument("--fiji-steps", default=None, help="Fiji 실행 파일 경로 — NFFA 이미지로 단계별 그림(강의 자료 그림 4)을 만든다")
     a = ap.parse_args()
     if a.fetch:
         fetch()
@@ -201,3 +316,6 @@ if __name__ == "__main__":
         run_fiji(a.fiji)
     if a.score:
         score()
+    if a.fiji_steps:
+        run_fiji_steps(a.fiji_steps)
+        steps_figure()
